@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "amplifier-sim-3d"
+version = "0.1.0"
+description = "Configurable three-dimensional solid-state laser amplifier simulator"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+ui = [
+  "streamlit>=1.32",
+  "plotly>=5.18",
+  "pandas>=2.0",
+]
+performance = [
+  "scipy>=1.11",
+  "numba>=0.61,<0.63",
+]
+frog = [
+  "h5py>=3.10",
+]
+
+[project.scripts]
+amplifier-sim = "amplifier_sim.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+amplifier_sim = ["data/*.json"]
+
+[tool.pytest.ini_options]
+markers = [
+  "requires_scipy: exercises a feature whose public contract requires the optional SciPy performance extra",
+]

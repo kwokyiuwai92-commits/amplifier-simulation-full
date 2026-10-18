@@ -1,0 +1,76 @@
+{
+  "id": "sridharan_2007_ybyag",
+  "title": "Yb:YAG master oscillator power amplifier for remote wind sensing",
+  "authors": ["A. K. Sridharan", "S. Saraf", "R. L. Byer"],
+  "year": 2007,
+  "doi": "10.1364/AO.46.007552",
+  "source_url": "https://opg.optica.org/abstract.cfm?uri=ao-46-30-7552",
+  "author_pdf_url": "https://web.stanford.edu/~rlbyer/PDF_AllPubs/2007/422B_Sridharan.pdf",
+  "model": "zigzag_frantz_nodvik_eq6",
+  "claim_type": "published_design_prediction",
+  "evidence_note": "The paper experimentally measures a single-pass logarithmic small-signal gain of 3 in a smaller preamplifier. The two saturated single-pass output energies below are Table 2 design predictions, not measured power-amplifier outputs.",
+  "cases": [
+    {
+      "id": "100_mJ_slab_first_pass",
+      "parameters": {
+        "crystal_total_length_m": 0.0198,
+        "doped_length_m": 0.0166,
+        "undoped_end_length_m": 0.0016,
+        "crystal_width_m": 0.0011,
+        "crystal_thickness_m": 0.0011,
+        "yb_atomic_doping_percent": 3.0,
+        "pump_peak_power_W": 1134.0,
+        "pump_pulse_duration_s": 0.001,
+        "repetition_rate_Hz": 40.0,
+        "signal_wavelength_m": 1.03e-6,
+        "signal_pulse_duration_s": 1.0e-6,
+        "input_energy_J": 0.005,
+        "gaussian_1e2_radius_m": 0.00033,
+        "first_pass_bounce_angle_deg": 24.93,
+        "first_pass_bounce_count": 8,
+        "logarithmic_small_signal_gain": 3.0,
+        "saturation_fluence_J_m2": 86600.0,
+        "single_pass_transmission": 1.0
+      },
+      "published": {
+        "stored_energy_J": 0.277,
+        "active_area_available_energy_J": 0.121,
+        "zigzag_extractable_energy_J": 0.050,
+        "single_pass_output_energy_J": 0.035,
+        "heat_extraction_flux_W_cm2": 12.4
+      },
+      "acceptance_relative_error": 0.02
+    },
+    {
+      "id": "1_J_slab_first_pass",
+      "parameters": {
+        "crystal_total_length_m": 0.0500,
+        "doped_length_m": 0.0366,
+        "undoped_end_length_m": 0.0067,
+        "crystal_width_m": 0.0035,
+        "crystal_thickness_m": 0.0035,
+        "yb_atomic_doping_percent": 1.3,
+        "pump_peak_power_W": 11475.0,
+        "pump_pulse_duration_s": 0.001,
+        "repetition_rate_Hz": 40.0,
+        "signal_wavelength_m": 1.03e-6,
+        "signal_pulse_duration_s": 1.0e-6,
+        "input_energy_J": 0.100,
+        "gaussian_1e2_radius_m": 0.0011,
+        "first_pass_bounce_angle_deg": 24.04,
+        "first_pass_bounce_count": 6,
+        "logarithmic_small_signal_gain": 3.0,
+        "saturation_fluence_J_m2": 86600.0,
+        "single_pass_transmission": 1.0
+      },
+      "published": {
+        "stored_energy_J": 2.8,
+        "active_area_available_energy_J": 1.24,
+        "zigzag_extractable_energy_J": 0.55,
+        "single_pass_output_energy_J": 0.503,
+        "heat_extraction_flux_W_cm2": 17.9
+      },
+      "acceptance_relative_error": 0.02
+    }
+  ]
+}
