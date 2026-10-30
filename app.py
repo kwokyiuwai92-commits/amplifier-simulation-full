@@ -325,12 +325,13 @@ def _localized_choice_state(
 
     # A direct assignment by application code (for example, returning from
     # the JSON editor to the form) takes precedence over the saved shadow.
-    if canonical_exists and (
+    canonical_override = canonical_exists and (
         not shadow_exists
         or not _choice_values_equal(
             st.session_state[original_key], st.session_state[shadow_key]
         )
-    ):
+    )
+    if canonical_override:
         candidate = copy.deepcopy(st.session_state[original_key])
         has_candidate = True
         st.session_state[shadow_key] = copy.deepcopy(candidate)
@@ -345,10 +346,7 @@ def _localized_choice_state(
         display_key not in st.session_state
         or (
             active_locale() == EN
-            and canonical_exists
-            and not _choice_values_equal(
-                st.session_state[original_key], st.session_state[display_key]
-            )
+            and canonical_override
         )
     ):
         st.session_state[display_key] = copy.deepcopy(candidate)
@@ -363,7 +361,9 @@ def _remember_choice_value(
     state_keys: tuple[Any, str] | None,
 ) -> Any:
     if state_keys is not None:
-        _, shadow_key = state_keys
+        original_key, shadow_key = state_keys
+        if active_locale() == EN:
+            st.session_state[original_key] = copy.deepcopy(value)
         st.session_state[shadow_key] = copy.deepcopy(value)
     return value
 

@@ -154,6 +154,25 @@ python -m pip show streamlit
 
 On macOS/Linux, `which python` also shows the interpreter selected by the shell; on Windows, use `where python` in Command Prompt. Use the same environment interpreter for both installation and launch.
 
+### 2.4 Load, Edit, and Save the Included Example
+
+After launching, select **Amplifier Simulation** and **Configuration Entry → Form**. Open **Configuration File**, upload `configs/example.json`, and wait for the form to refill. The example already contains its material parameters and pulse-input data; you do not need to upload a material library or the original spectrum files.
+
+The following controls change the quantities commonly used in a first comparison. Enter distances and lengths in metres, as shown in their labels, and confirm each numeric entry with Enter or by leaving the field.
+
+| Quantity | Where to edit it | Included example |
+|---|---|---|
+| Pump power | **② Beams → Pump · Power, Spatial, and Spectral → Pump Power (W)** | 12.765 W |
+| Gain-crystal length | **③ Medium → Crystal, Material, and Energy Levels → Crystal Length (m)** | 0.015 m = 15 mm; this is separate from the preceding ZnSe thickness |
+| Pump lens-to-crystal distance | Pump panel, section **D. Independent Pump Path and Radius Probe**: edit the `gain_medium` row named `CrZnS_pump_path` | 0.150 m = 150 mm |
+| Seed lens-to-crystal distance | Seed panel, **F. Independent Seed Path and Radius Probe**: edit the `gain_medium` row named `CrZnS_seed_path` | 0.200 m = 200 mm |
+
+In either optical-path table, edit **Distance from Previous Element (m)** in the GAIN row to change the lens-to-crystal distance. The table writes the edit back immediately. Alternatively, choose the GAIN row in **Select Element to Edit**, change **Previous Element → GAIN Input Face Distance (m)**, and click **Apply Selected Parameters Below**. Edits in that lower panel are not applied until you click the button. The LASER-to-first-element field and the first lens row control the source-to-lens distance instead; both are 0.005 m in this example. Pump and Seed have separate paths.
+
+To save the edited configuration before running, switch **Configuration Entry → Full JSON**, copy the complete JSON from the text area, and save it as a `.json` file, for example `my_setup.json`. Click **Apply to Form** to return to the form with those values. Then click **Run Current Configuration**. The button is disabled while another job is active or the configuration has unresolved errors; the interface identifies the reason. In Full JSON mode, **Run JSON** runs the text directly instead.
+
+After a run, **Diagnostics and Export → Download this configuration JSON** saves the configuration used for that result. Later form edits do not alter the saved result; run again to calculate the new settings. Keep a separate JSON for each comparison.
+
 ---
 
 <a id="section-3"></a>
@@ -195,12 +214,17 @@ Spatial-boundary checks block a result only for internal propagation paths that 
 
 ## 4. Overall Interface Layout
 
-Inputs and model choices appear on the left. The current solver requirements, optical-path preview, results, and diagnostics appear on the right. The left side uses four workspaces sharing one configuration:
+Inputs and model choices appear on the left. The current solver requirements, optical-path preview, results, and diagnostics appear on the right. The left side uses five workspaces sharing one configuration:
 
 1. **① Model:** solver family, gain source, periodic steady state, multipass organization, and thermal-optical coupling.
 2. **② Beams:** Pump/Seed sources, temporal and spectral definitions, spatial modes, polarization, and separate optical paths.
 3. **③ Medium:** crystal, material, energy levels, heating, cooling, stress, ASE, spectroscopic feedback, and strong-field nonlinearities.
 4. **④ Numerics:** physical/optical grids, sampling, computational budgets, and validity checks.
+5. **⑤ Result Recording:** recording level, diagnostic timing, longitudinal samples, and optional field/plane output.
+
+**Interface Level → Guided** keeps the common controls visible and collapses advanced solver overrides. **Expert** exposes the detailed overrides. Both edit the same configuration; changing the interface level does not itself enable or disable physical models.
+
+Use the question-mark icon beside a control to read its help text. For an explanation of the current calculation as a whole, click **Generate / Refresh Complete Model Description** in the configuration-check area or the equivalent button in the sidebar, or **Generate Complete Physics Description** below the optical-path preview. The generated explanation shows the effective Pump, population, gain, thermal, and Seed chain, including disabled or locked features. It follows the current form and can be downloaded as Markdown. Generating it does not start a numerical calculation.
 
 Within Pump, the form is divided into A: Power and Active Absorption; B: Spatial Source and Propagation; C: Temporal Waveform and Spectrum; and D: Separate Optical Path and Radius Probes. Seed is divided into A: Pulse; B: Gain Transport; C: Polarization; D: Spatial; E: Complex Spectrum/CPA; and F: Separate Optical Path.
 
@@ -471,13 +495,13 @@ The selected FN/JOSA/CPA solver then propagates one final pulse through the conv
 
 #### `reduced_pulse_map`
 
-Available only for `coherent_cpa`, this intermediate-cost method converges discrete-cycle populations with a low-dimensional whole-pulse proxy, then uses the configured full coherent backend for the final reported pulse. Strict validation compares populations and outputs from the proxy and final propagation. A converged proxy does not by itself establish a full CPA fixed point.
+`reduced_pulse_map` is an initialization option for `coherent_cpa`, not a separate reported steady-state solution. Select `method="pulse_map"` with `pulse_map_initialization="reduced_pulse_map"`. The legacy `method="reduced_pulse_map"` is accepted as an alias for that combination. The selected low-dimensional whole-pulse proxy first supplies an approximate cycle-boundary population; the configured full pulse map then continues until its own population, output, and any enabled carrier convergence checks pass. Proxy convergence alone is not sufficient, and the calculation does not stop after just one final CPA pulse.
 
 - `model="phase_insensitive"`: a phase-insensitive whole-pulse proxy with controlled `temporal_bins`/`spectral_bins`.
 - `model="axisymmetric_coherent_kerr"`: an axisymmetric coherent Kerr proxy over frequency×time×radius, requiring `seed.coherent.fidelity_mode="axisymmetric_kerr"`.
-- `relative_tolerance` and `consecutive_cycles`: control the proxy fixed point. Spatial/spectral/radial sampling needs separate convergence checks.
+- `relative_tolerance` and `consecutive_cycles`: control the initializer's proxy fixed point, not the final full-map convergence requirements. Spatial/spectral/radial sampling needs separate convergence checks.
 
-This method does not carry time-domain free-carrier memory and is not used for JOSA or ordinary FN. Use the full `pulse_map` if those states are required or proxy-to-final differences exceed thresholds.
+The reduced initializer is attempted once per top-level run. Later thermal-optical iterations warm-start from the preceding full-map state instead of repeating the proxy. If initialization fails, the solver records the reason and continues with the full map from the available starting state. The initializer is not used for JOSA or ordinary FN. Any required cross-pulse carrier memory must converge in the configured full map; it is not established by the reduced initial guess.
 
 #### `pulse_map`
 
@@ -1115,6 +1139,8 @@ Known optional numeric fields set to JSON `null` are interpreted as unset during
 
 `distance_before_m` is the actual free-space distance before an element. In the first row it is the distance from this beam's LASER source to its first element; in subsequent rows it is the distance from the previous element to the current one. In the common LASER → lens → GAIN setup, the GAIN row therefore gives the lens-to-crystal-entrance distance. Pump and Seed tables are stored independently and do not overwrite one another. Editing this column immediately updates the preview. **Shared crystal entrance = 0** is only the common reference plane used for overlaying beams and querying coordinates; it does not require equal source-to-crystal or lens-to-crystal distances. `turn_angle_x/y_deg` is a UI convenience field that inserts a coordinate break after the element.
 
+The table and lower element editor apply changes differently. Table edits are written back immediately. In **Select Element to Edit**, the fields below the selector are a pending edit: click **Apply Selected Parameters Below** to write them to the path. For a `gain_medium`, the distance field is **Previous Element → GAIN Input Face Distance (m)**. Section 2.4 identifies the Pump and Seed GAIN rows in the bundled example.
+
 `double_pass_lens_relay` is specifically for an ideal crystal/object plane → F3 → F4 → plane mirror → F4 → F3 → crystal/image plane system. The program derives the full round-trip ABCD matrix from the five actual distances/focal lengths. It accepts only unit-magnification imaging with `B=0` and `|A|=1`, then applies the exact image flip if `A=-1` and the return wavefront curvature `C/A` at the original sampled plane. This preserves the actual F3/F4 compensation power for the thermal lens while avoiding aliasing on a fixed FFT grid near intermediate foci. Systems with finite apertures, lens aberrations, or nonimaging `B≠0` must still be split into ordinary elements and checked for window/sampling convergence.
 
 ### 10.5 Spectral response
@@ -1436,6 +1462,10 @@ The interface's supported list includes:
 
 Select linear or logarithmic sampling, start, end, and point count. Logarithmic sampling requires positive start and end values. Enabling the **two-dimensional parameter grid** allows a second, different input. The program calculates the Cartesian product and displays each output metric as a two-dimensional heatmap. A 2D sweep requires `Nx×Ny` calculations, not `Nx+Ny`. For detailed FFT/thermal-fixed-point models, start with 3×3 or 5×5 to inspect the trend.
 
+Choose the outputs to plot, then click **Run Parameter Sweep**. Where points can run independently, **Concurrent Points** selects 1–3 workers. One worker provides the full live diagnostic panel; 2–3 workers show each point's stage and progress while still saving complete fields per point. Supported warm-start sweeps run serially so that each point can inherit the preceding state.
+
+**Pause Sweep** freezes the active point or points and the sweep process; **Resume Sweep** continues from the same numerical state without repeating completed points. **Stop and Cancel This Sweep** terminates unfinished points but retains completed points for download. **Download Completed Portion** includes only completed, persisted points, not the active or paused points; it becomes available after the first point finishes. Save the downloaded archive before choosing **Discard This Sweep**, which permanently deletes the temporary results. Pause/resume has the same platform and server-lifetime limits as single-run controls in Section 14.1.
+
 #### FCA convergence stopping-condition switch
 
 `simulation.periodic_steady_state.free_carrier_convergence.enabled` defaults to `true`. Setting it explicitly to `false` removes only the carrier-residual stopping restriction from the ordinary inner iteration, Joint Frozen joint criterion, and final frozen check. FCA absorption, carrier evolution, phase terms, and raw residuals are still calculated and retained. The interface option for using the FCA carrier residual in convergence decisions controls this setting. Population, output, and thermal-optical tolerances remain active, and original validation checks are not erased. Meeting the remaining stopping conditions does not mean the carrier state has converged.
@@ -1449,6 +1479,10 @@ When both 2D axes are supported, automatic serial execution follows a serpentine
 Failed or explicitly unconverged points do not export a new continuation state. A previous usable state is retained if available. Incompatible state shapes or values are recorded, and the calculation falls back to configured initialization. `continuation` records whether a state was inherited, its source point, and any fallback reason. The old `pump_continuation` field remains as a compatibility alias. Numerical convergence and overall validation are assessed separately; all original warnings are retained.
 
 Two-dimensional combinations containing unsupported parameters, such as crystal dimensions or material properties, still initialize every point independently and can run in parallel. Lightweight `run_compact_parameter_*` screening interfaces also retain independent-point calculations. Warm starts may follow one stable solution branch. For multistability or hysteresis, compare reverse scans or independent initial conditions; faster convergence does not establish uniqueness.
+
+#### Starting from an archived point
+
+Open **Local Result-Point Warm Start (Optional)**, enter the full local path to a complete `.ampres.zip`, and enter its **Result-Point Number (Starting at 1)**. Leave the path blank to disable this option. It supplies an initial guess for a new single run or the first point of a supported warm-start sweep, rather than reusing old output or resuming an interrupted job. Sweeps that do not support state continuation, including a crystal-length sweep, use the configured initialization and ignore this archive even with one worker. The archived energy-level names and physical-grid coordinates must match the current setup; incompatible inputs are rejected. The solver still closes every equation, including any newly enabled free-carrier state.
 
 ### 13.2 Outputs available for plotting
 
@@ -1508,6 +1542,16 @@ Check the following in order:
 
 The interface saves the resolved configuration and `SimulationResult` for each calculation. Later edits to the form do not recalculate that result, so interpret it using its saved configuration.
 
+#### Starting, pausing, and canceling
+
+After the configuration checks pass, click **Run Current Configuration**. The background worker uses a fixed configuration snapshot. Editing the form, changing pages, or generating a configuration file does not modify or restart the active calculation; these edits apply to the next run.
+
+**Pause Solve** freezes the process and preserves its in-memory numerical state. **Resume Solve** continues from that same state. **Stop and Cancel This Solve** terminates the job, and an unfinished result is not archived. Pause/resume requires process-signal support, as provided on macOS/Linux; the current implementation does not support it on Windows.
+
+Keep the Streamlit server and the terminal that launched it running. Closing or refreshing the browser alone does not cancel a worker, but stopping the server does not save a checkpoint. An unfinished calculation cannot be resumed from its previous numerical state after a server restart. Reopening a completed `.ampres.zip` restores saved results for viewing, not a running solver.
+
+A completed task means execution finished. Check convergence, validation, and warnings before using the result quantitatively. After a failed or canceled run, an earlier completed result may remain visible; check its configuration snapshot and the failure or cancellation notice before interpreting it.
+
 ### 14.2 Overview metrics
 
 The overview highlights the final system output energy per pulse. If the repetition rate is positive, it also calculates
@@ -1516,7 +1560,7 @@ $$
 P_{out,avg}=E_{out,pulse}f_{rep}.
 $$
 
-Output average power here is the steady-state output pulse energy multiplied by the Seed repetition rate; it is not an instantaneous power from one period merely relabeled in W. Absorbed Pump power is the volume-integrated absorption averaged over the corresponding steady-state or sampling window, in W. A single-shot preparation window must not be described as a repetition period; see Section 8.6.
+The displayed output power is the reported pulse energy multiplied by the Seed repetition rate; it is not an instantaneous power from one period merely relabeled in W. Interpreting it as a steady-state mean requires convergence of the appropriate periodic operating state. Absorbed Pump power is the volume-integrated absorption averaged over the corresponding steady-state or sampling window, in W. A single-shot preparation window must not be described as a repetition period; see Section 8.6.
 
 ### 14.3 Optical paths and passes
 
@@ -1598,7 +1642,7 @@ For CW pumping and smoothly varying rate equations, relatively few samples are o
 ### 15.3 `cycle_average`, `reduced_pulse_map`, and `pulse_map`
 
 - `cycle_average` inserts period-averaged Pump and Seed photon fluxes into algebraic steady-state equations. It is fast and suitable for high repetition rates with weak single-pulse extraction.
-- `reduced_pulse_map` applies only to coherent CPA. A phase-insensitive or axisymmetric coherent low-dimensional surrogate first closes the period. One pulse is then calculated with the configured full CPA backend, and surrogate/final differences form a validity gate.
+- `reduced_pulse_map` is a coherent-CPA initializer: a phase-insensitive or axisymmetric coherent proxy supplies an approximate periodic population, then the configured full `pulse_map` iterates to its own convergence criteria. The legacy method name selects this same initializer; the proxy is not a separate reported solution.
 - `pulse_map` executes a complete Pump period and one Seed extraction pulse as a fixed-point map, repeating until both pre-pulse populations and output energy converge. It suits strong pulse extraction, significant front/tail depletion, or memory within the period. Cycle-averaged initialization, outer thermal-optical warm starts, and safeguarded Anderson acceleration are available by default to reduce map evaluations.
 
 The final `pulse_map` output is one representative Seed pulse from the converged period. Average output remains this pulse energy multiplied by repetition rate.
@@ -2044,6 +2088,10 @@ Use "Download Complete Result Archive" to save a ZIP that can be reloaded in the
 
 After a background single run completes, its complete result archive is automatically saved to disk and its actual path is displayed. This persistent file is not deleted when the page refreshes. If it exists, the download streams a direct copy rather than recompressing it. A failure to save automatically is displayed as an error; while results remain in the session, a temporary generated download is also offered.
 
+Single-run archives are saved by default in `exports/` inside the extracted project folder. The environment variable `AMPLIFIER_SIM_UI_AUTOSAVE_DIRECTORY` can override that directory. Browser downloads are separate copies saved to the browser's selected download location. CLI `run -o ...` instead writes the individual result files to the specified output directory. A sweep's persisted point files are temporary working data; download its complete or partial `.ampres.zip` before discarding the sweep.
+
+To reopen saved results, choose **Result Analysis**, upload the `.ampres.zip` through the result-package uploader, and use **Select Case** to choose a point. Loading restores the saved views without rerunning the solver or replacing the current simulation form. Review the archive's validity and warnings before inspecting individual points. This upload is for result archives; use the simulation page's Configuration File controls to load a Setup JSON for a new calculation.
+
 Temporary single-point and sweep archives are **generated only when clicked and streamed over the local loopback connection**. Displaying the link registers a short-lived capability. The stream from `127.0.0.1` starts only when the browser follows the link. A temporary single-point archive uses bounded disk staging. A sweep loads one persisted completed point at a time instead of keeping the whole ZIP in interface memory. Temporary files are cleaned up when download completes, fails, or is canceled. Automatically saved formal archives are not deleted as temporary staging. Links expire after roughly 30 minutes by default; refreshing the results page registers a new one. This is an entry point for a browser on the local computer, not a remote file server.
 
 If a background sweep is incomplete or stopped, the download contains only points durably completed at that moment. Its manifest records `partial=true`, `completed_points`, `requested_points`, and the job state at download time. It neither waits for nor fabricates unfinished points. After all completed points of a canceled/failed job have been successfully archived, the background cache may be cleaned according to its retention policy. Partial downloads of a running or paused job do not remove retention requirements. If interface summaries remain but the links to complete `SimulationResult` objects for successful points have been lost, the program refuses to generate a package named "complete." Instead, it offers an archive whose filename includes `summary_only` and whose metadata states `full_field_data_included=false`. That archive preserves metrics, configurations, validity, and warnings for each point, while explicitly excluding 3D fields, optical planes, and complete per-point results for replots.
@@ -2108,6 +2156,8 @@ Model-dependent optional fields include active/passive Pump absorption, passive 
 ### 22.3 `optical_planes.npz`
 
 This file is produced when `record_optical_planes` is enabled and the solver has recorded diagnostic planes. Keys encode the beam, element, or pass; arrays are generally two-dimensional intensity/fluence or quantities derived from the complex field. Use the plane descriptions in `summary.json` to interpret the arrays and check which keys are present.
+
+When saved planes have their own coordinates, `optical_plane_coordinates.npz` accompanies `optical_planes.npz`. Its keys use `<plane-name>__x_m` and `<plane-name>__y_m`. Use these coordinates for each plane rather than assuming that all planes share the physical-grid axes in `fields.npz`.
 
 ### 22.4 `fields.vti` / `fields.vtr`
 

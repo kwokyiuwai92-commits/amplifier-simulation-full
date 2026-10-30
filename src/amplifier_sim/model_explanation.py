@@ -552,11 +552,26 @@ def build_field_help(
         "复光谱 CSV：λ(nm), amplitude, phase(rad) 或 real, imag": "导入 Seed 的复光谱振幅与相位；程序会检查采样并按配置的单脉冲总能量重新归一化。",
         "fft 线程数（0=全部可用核）": "限制单次 FFT 可使用的工作线程数；0 交给后端使用可用 CPU 核，不改变传播物理。",
         "启用多线程 FFT 的最小数组元素数": "数组小于该规模时避免线程调度开销，大于该规模时允许多线程 FFT；只影响速度。",
+        "M² x": "设置 x 轴的光束质量因子 M²；1 表示理想基模。它控制二阶矩衍射与发散；是否逐个传播 HG 模态由横向模态模型决定。",
+        "M² y": "设置 y 轴的光束质量因子 M²；1 表示理想基模。它控制二阶矩衍射与发散；是否逐个传播 HG 模态由横向模态模型决定。",
+        "饱和通量 (J/m²)": "设置可饱和增益使用的饱和能量通量（J/m²）；开启增益饱和时，这一局部能量面密度尺度决定给定输入通量下的增益耗尽程度。",
+        "FCA 截面 (m²)": "设置自由载流子吸收截面 σFCA（m²）；启用自由载流子模型时，它与时间箱内平均载流子密度相乘，得到被动吸收系数 αFCA=σFCA Ncarrier（m⁻¹），用于 Seed 损耗。它不代表掺杂离子的受激跃迁截面。",
+        "小信号增益系数 g₀ (m⁻¹)": "指定未饱和的小信号增益系数（m⁻¹）；它与传播长度共同决定小信号增益。开启 gain_saturation 时，实际提取受饱和通量约束；关闭时使用小信号增益。该系数不由 Pump 布居计算。",
+        "配置": "编辑完整求解配置 JSON；内容会被解析、合并默认值并校验。应用到表单会更新参数，运行 JSON 会使用解析后的配置启动计算。",
+        "自定义能级附加 JSON": "编辑自定义能级、Pump/Signal 跃迁、衰减和非线性过程；解析后的字段会写入 energy_levels，并改变布居和增益计算。请使用有效 JSON 及已经声明的能级名称。",
+        "x→y 偏振方位角 (deg)": "设置 Jones 输入偏振在实验室 x/y 方向上的振幅配比；0° 对应 x，90° 对应 y。椭圆偏振态还取决于 Ey−Ex 相对相位。该设置改变输入偏振态，不改变光轴或入射角。",
+        "Ey−Ex 相对相位 (rad)": "设置 Jones 分量 Ey 相对 Ex 的相位（rad）；该相位与两分量的振幅比例共同决定椭圆偏振态，不改变总 Seed 能量。",
+        "径向 Cᵣ": "设置径向平面应力近似中的无量纲光弹系数 Cᵣ；它与 2 n₀³ αT [T(r,z)−T(0,z)] 相乘，给出径向折射率变化。请使用适合材料和近似模型的数据。",
+        "切向 Cθ": "设置切向平面应力近似中的无量纲光弹系数 Cθ；它与 2 n₀³ αT [T(r,z)−T(0,z)] 相乘，给出切向折射率变化。请使用适合材料和近似模型的数据。",
+        "初始软时间窗数": "设置瞬态增益开始使用的时间软窗数量；各窗按 front→tail 依次读取和更新布居。开启自适应后可按耗尽增加窗数，仍须通过单窗耗尽与重组误差检查。",
+        "最大软时间窗数": "设置自适应瞬态增益可使用的最大时间软窗数量；达到上限后若单窗耗尽仍超标，按失败策略处理，不视为精度通过。",
+        "软时间窗总数上限（含两侧尾窗）": "设置尾部保护模式的固定总窗数，包含左右各一个尾窗，其余用于中心能量区。此模式的初始值与上限相同，不会自动加窗；仍检查耗尽与重组误差。",
+        "单次 Seed 前的 Pump 预备时间 (s)": "设置单发 Seed 前的 Pump 预备时间（s）。仅在 transient 布居模式下按该时长积分 Pump 与布居；steady_state 直接求稳态，frozen 保留初始布居，均不按这段时长推进。它不是重复周期，也不改变重复频率。",
     }
-    if lower in exact:
-        return exact[lower]
     if text in exact:
         return exact[text]
+    if lower in exact:
+        return exact[lower]
     if control_kind == "file_uploader":
         return f"导入“{text}”所述数据；文件会先做格式、有限值和坐标检查，再写入当前配置，不会静默覆盖无关模块。"
     if control_kind == "download_button":
@@ -578,56 +593,56 @@ def build_field_help(
             return f"执行“{text}”；恢复该区域的预设值并重新回填相关表单，其他模块不会被无条件覆盖。"
         return f"执行“{text}”所述操作；动作只作用于当前配置或结果区，完成后界面会显示状态与影响范围。"
     if "gdd" in lower or "tod" in lower or "fod" in lower or lower.startswith("gd "):
-        return f"设置{text}；它作为光谱相位多项式参与脉冲展宽/压缩，影响时间波形和峰值功率，但不改变光谱能量。"
+        return f"设置 {text}；它作为光谱相位多项式参与脉冲展宽/压缩，影响时间波形和峰值功率，但不改变光谱能量。"
     if "n₂" in text or "n2" in lower or "非线性折射率" in text:
-        return f"设置{text}；它决定 Kerr 非线性相位、B-integral、SPM 展宽和等效 Kerr 透镜强度。"
+        return f"设置 {text}；它决定 Kerr 非线性相位、B-integral、SPM 展宽和等效 Kerr 透镜强度。"
     if "dn/dt" in lower:
-        return f"设置{text}；局部温升乘该系数形成热致折射率变化并反馈到允许的光学传播后端。"
-    if "m²" in text or "m2" in lower:
-        return f"设置{text}；它控制该轴的等效衍射/发散和焦散，M²=1 表示理想基模。"
+        return f"设置 {text}；局部温升乘该系数形成热致折射率变化并反馈到允许的光学传播后端。"
+    if "M²" in text or "M^2" in text or lower == "m2" or lower.startswith("m2 "):
+        return f"设置 {text}；它控制该轴的等效衍射/发散和焦散，M²=1 表示理想基模。"
     if "波长" in text:
-        return f"设置{text}；该值决定光子能量、材料截面插值、折射率/色散以及衍射尺度。"
+        return f"设置 {text}；该值决定光子能量、材料截面插值、折射率/色散以及衍射尺度。"
     if "截面" in text or "σ" in text:
-        return f"设置{text}；局部光子通量乘该截面得到吸收或受激发射速率，并直接影响反转和增益。"
+        return f"设置 {text}；局部光子通量乘该截面得到吸收或受激发射速率，并直接影响反转和增益。"
     if "寿命" in text:
-        return f"设置{text}；它决定相应能级的自发弛豫时间尺度、重复运行记忆和可能的非辐射产热。"
+        return f"设置 {text}；它决定相应能级的自发弛豫时间尺度、重复运行记忆和可能的非辐射产热。"
     if "脉宽" in text or "时间强度 fwhm" in lower or "脉冲时长" in text:
-        return f"设置{text}；在总能量固定时它决定时间包络、峰值功率和 Kerr/强场效应。"
+        return f"设置 {text}；在总能量固定时它决定时间包络、峰值功率和 Kerr/强场效应。"
     if "功率" in text:
-        return f"设置{text}；它按当前平均/峰值定义进入光子通量、吸收、布居和热负载计算。"
+        return f"设置 {text}；它按当前平均/峰值定义进入光子通量、吸收、布居和热负载计算。"
     if "能量" in text:
-        return f"设置{text}；它归一化单次 Seed/Pump 事件，并影响增益饱和、峰值功率和平均输出。"
+        return f"设置 {text}；它归一化单次 Seed/Pump 事件，并影响增益饱和、峰值功率和平均输出。"
     if "半径" in text or "腰斑" in text or "窗口" in text:
-        return f"设置{text}；它决定横向场尺度、强度归一化和边界余量，窗口过小会触发截断/FFT 边界诊断。"
+        return f"设置 {text}；它决定横向场尺度、强度归一化和边界余量，窗口过小会触发截断/FFT 边界诊断。"
     if "焦" in text or "距离" in text or "光程" in text or "起点" in text or "终点" in text:
-        return f"设置{text}；它改变光路中的纵向位置或扫描范围，从而影响束宽、曲率、焦点及记录平面。"
+        return f"设置 {text}；它改变光路中的纵向位置或扫描范围，从而影响束宽、曲率、焦点及记录平面。"
     if "角" in text or "倾斜" in text or "na" in lower:
-        return f"设置{text}；它改变光轴方向或入射几何，并参与走离、界面折射和横向采样适用性检查。"
+        return f"设置 {text}；它改变光轴方向或入射几何，并参与走离、界面折射和横向采样适用性检查。"
     if "透过" in text or "损耗" in text or "吸收" in text:
-        return f"设置{text}；它从相应光功率/能量账本扣除能量，并按模块合同决定是否转化为热。"
+        return f"设置 {text}；它从相应光功率/能量账本扣除能量，并按模块合同决定是否转化为热。"
     if "导热" in text or "比热" in text or "冷却" in text or "温度" in text:
-        return f"设置{text}；它进入热方程或材料工作点，影响温升、热透镜、应力和温度相关光谱参数。"
+        return f"设置 {text}；它进入热方程或材料工作点，影响温升、热透镜、应力和温度相关光谱参数。"
     if "密度" in text:
-        return f"设置{text}；它决定单位体积的活性离子、质量或材料响应尺度，并参与体积分守恒。"
+        return f"设置 {text}；它决定单位体积的活性离子、质量或材料响应尺度，并参与体积分守恒。"
     if "nx" in lower or "ny" in lower or "nz" in lower or "采样" in text or "分箱" in text or "时间步" in text:
-        return f"设置{text}；更高采样通常提高空间/时间/光谱分辨率，同时近似按相应维度增加内存和运行时间。"
+        return f"设置 {text}；更高采样通常提高空间/时间/光谱分辨率，同时近似按相应维度增加内存和运行时间。"
     if "迭代" in text or "周期数" in text or "连续满足" in text or "子步" in text:
-        return f"设置{text}；它是收敛或自适应推进的上下限，达到容差时可提前结束。"
+        return f"设置 {text}；它是收敛或自适应推进的上下限，达到容差时可提前结束。"
     if "容差" in text or "残差" in text:
-        return f"设置{text}；残差低于该阈值才判定相应固定点/线性求解器收敛，设得更小通常更慢。"
+        return f"设置 {text}；残差低于该阈值才判定相应固定点/线性求解器收敛，设得更小通常更慢。"
     if "松弛" in text:
-        return f"设置{text}；较小值抑制固定点振荡但增加迭代次数，较大值收敛更快但可能不稳定。"
+        return f"设置 {text}；较小值抑制固定点振荡但增加迭代次数，较大值收敛更快但可能不稳定。"
     if "阶" in text or "order" in lower:
-        return f"设置{text}；它控制分布边缘、展开阶数或拟合复杂度，阶数越高通常需要更细采样。"
+        return f"设置 {text}；它控制分布边缘、展开阶数或拟合复杂度，阶数越高通常需要更细采样。"
     if "折射率" in text:
-        return f"设置{text}；它决定界面折射、光程、群延迟和晶体内衍射尺度。"
+        return f"设置 {text}；它决定界面折射、光程、群延迟和晶体内衍射尺度。"
     if "长度" in text or "宽度" in text or "高度" in text or "直径" in text:
-        return f"设置{text}；它定义材料/脉冲/几何范围，并参与体积分、边界条件和传播步长。"
+        return f"设置 {text}；它定义材料/脉冲/几何范围，并参与体积分、边界条件和传播步长。"
     if control_kind == "text_input":
-        return f"设置“{text}”的可追溯文本标识；它用于界面和结果记录，不会替代同模块的物理参数。"
+        return f"设置“{text}”的文本输入；请按当前模块要求填写，配置 JSON 或数值数据会参与输入解析与校验。"
     return (
-        f"设置“{text}”的数值；它会写入当前展开模块并参与下一次求解。"
-        "问号说明保留单位和模块边界；实际是否被上级模式锁定请同时查看配置体检。"
+        f"设置“{text}”的数值；该值写入当前配置，并在下一次运行时由对应模块读取。"
+        "若设置被上级模式锁定，请查看“实际生效的求解栈”。"
     )
 
 
