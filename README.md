@@ -2,7 +2,7 @@
 
 Complete source release, prepared on 18 October 2026. Includes the calculation core, web interface, and a previously executed example configuration.
 
-[Full User Manual](docs/User_Manual.md): detailed instructions for the interface, parameters, physical models, coupling, results, and troubleshooting. English manual added on 30 October 2026.
+Full user manual: [Markdown](docs/User_Manual.md) · [PDF](docs/User_Manual.pdf). Detailed instructions for the interface, parameters, physical models, coupling, results, and troubleshooting. English editions prepared on 30 October 2026.
 
 [Chinese README](https://github.com/kwokyiuwai92-commits/amplifier-simulation-full/blob/main/README_zh.md)
 
@@ -10,7 +10,7 @@ Complete source release, prepared on 18 October 2026. Includes the calculation c
 
 - `app.py`, `src/`, `pyproject.toml`, and `.streamlit/`: the complete calculation code, web interface, dependency definitions, and interface settings.
 - `configs/example.json`: operating point 9 from the nine-point position scan completed on 15 September 2026. Physical and numerical settings are preserved; identifiers use this release's naming scheme.
-- `docs/User_Manual.md`: the full English user manual.
+- `docs/User_Manual.md` and `docs/User_Manual.pdf`: the full English user manual in both formats.
 - `README.md`: these quick-start instructions. The ZIP contains English documentation only; GitHub also provides the Chinese README.
 
 ## Installation and launch
