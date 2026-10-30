@@ -1,16 +1,16 @@
-# Amplifier Simulation — Full User Manual
+# Amplifier Simulation User Manual
 
-English release edition: **30 October 2026**. This edition accompanies the complete source release prepared on 18 October 2026. The underlying technical manual records its source review on 8 September 2026; that historical review is described in Section 24.5 and is not a claim that those numerical tests were repeated for this translation.
+Amplifier Simulation models Pump absorption, Seed amplification, energy-level populations, and thermal effects in solid-state laser amplifiers. This manual explains how to set up a calculation, choose the models, and read the results.
 
-This manual explains both how to operate the interface and what the model choices and switches change in the calculation. A more complex model is not automatically more accurate: quantitative interpretation depends on the input data, resolution, and model assumptions matching the experiment.
+For installation and launch, start with the [README](../README.md). In the interface, choose **English** from the language selector. The question-mark icons beside the controls explain the settings and options.
 
-The program uses SI units internally. The interface displays convenient units such as mm, µm, nm, fs, and nJ where indicated. Choose **English** in the interface language selector. Question-mark icons beside controls provide explanations of settings and options.
+Calculations use SI units internally. The interface shows units such as mm, µm, nm, fs, and nJ where indicated. The source code, defaults, and validators define which settings the program supports.
 
-The [README](../README.md) provides the quick installation and launch instructions. This manual provides the detailed interface, configuration, architecture, physical-model, result, performance, and troubleshooting reference. The implemented source, normalized defaults, and validators remain authoritative when extending the program.
+The fast model is called **Commercial App**. Its configuration identifier is `commercial_app_fast`; related keys and module names use `commercial_app`.
 
-The fast model is called **Commercial App**. Its machine-readable identifier is `commercial_app_fast`; configuration keys and module names use `commercial_app` where appropriate.
+The source package includes `configs/example.json`, with its pulse inputs embedded. Other material libraries, study definitions, experimental inputs, research configurations, developer tests, and historical results must be supplied separately. The research validation and literature notes are also separate from this package.
 
-This distribution includes the complete runtime source and one executed example, `configs/example.json`. The example embeds its pulse inputs. Additional material libraries, study definitions, experimental inputs, research benchmark configurations, developer tests, and historical result archives discussed as optional resources are not bundled. Supply those files explicitly when using the corresponding optional workflow. The separate research validation and literature-tracking document is also outside this distribution.
+Source release: 18 October 2026. Manual updated: 30 October 2026. Section 24.5 records the earlier source review and its scope.
 
 ## Contents
 
@@ -49,7 +49,7 @@ The final part of Section 24 also covers the optional Commercial App radial grid
 
 ### 1.1 What the Program Models
 
-The program simulates three-dimensional solid-state laser amplifiers defined along the crystal's main propagation direction. Its main state variables include:
+The program models three-dimensional solid-state laser amplifiers along the crystal's main propagation direction. It tracks:
 
 - Pump fields and intensity, $I_p(x,y,z,t,\lambda)$.
 - Seed fluence or complex field, $F_s(x,y,z,t,\lambda)$ / $E_s(x,y,z,t)$.
@@ -79,13 +79,13 @@ $$
 P_{avg}=E_{pulse}f_{rep}.
 $$
 
-A repetition rate of zero means a single shot. Power obtained from this product in the summary may then be zero; this does not mean that the pulse has no energy, and it does not establish the average power of a repetitive operating state.
+A repetition rate of zero specifies a single shot. The summary may then report zero power from this product; this does not imply zero pulse energy. That value does not describe the average power of repetitive operation.
 
-**Absorbed Pump power** is a steady-state value, a Pump-cycle average, or a time average over the single-shot preparation window, depending on the population-evolution path actually used. It is not the energy in joules per cycle. The absorbed energy over the sampling window equals the average absorbed power multiplied by the window duration. Volumetric heat sources have units of W/m³.
+**Absorbed Pump power** may be a steady-state value, a Pump-cycle average, or a time average over the single-shot preparation window, depending on how populations are evolved. Its units are power, rather than joules per cycle. Multiply the average absorbed power by the sampling-window duration to obtain absorbed energy. Volumetric heat sources have units of W/m³.
 
 ### 1.3 Scope of the Physical Model
 
-The current models primarily use rate equations, slowly varying envelopes, and paraxial propagation. They handle population depletion, gain saturation, coherent spectral phase, dispersion, and Kerr effects, but do not solve optical polarization, finite dephasing, or Rabi oscillations. They can be used for amplifiers with pulses of tens of femtoseconds when the envelope approximation remains appropriate. Few-cycle carrier dynamics or strongly coherent transitions require a separate Maxwell–Bloch/UPPE backend.
+The models use rate equations, slowly varying envelopes, and paraxial propagation. They account for population depletion, gain saturation, coherent spectral phase, dispersion, and Kerr effects. They do not solve optical polarization, finite dephasing, or Rabi oscillations. Pulses of tens of femtoseconds can be modeled where the envelope approximation remains valid; few-cycle carrier dynamics and strongly coherent transitions require a separate Maxwell–Bloch/UPPE backend.
 
 ---
 
@@ -113,11 +113,11 @@ py -m venv .venv
 .venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-The browser should open automatically; otherwise visit `http://localhost:8501`. Select **English** in the sidebar if needed. Open **Configuration File** and upload the included `configs/example.json`; its values populate the form automatically.
+The browser should open automatically. If it does not, visit `http://localhost:8501`. Select **English** in the sidebar if needed, open **Configuration File**, and upload `configs/example.json`. The example's values fill the form automatically.
 
-You can activate the environment instead of typing its Python path every time. On macOS/Linux, run `source .venv/bin/activate`; in Windows Command Prompt, run `.venv\Scripts\activate.bat`; in PowerShell, use `.venv\Scripts\Activate.ps1` if your execution policy permits it. Activation affects only the current terminal session. The commands using the full environment Python path above do not require activation.
+To avoid typing the Python path for each command, activate the environment: use `source .venv/bin/activate` on macOS/Linux, `.venv\Scripts\activate.bat` in Windows Command Prompt, or `.venv\Scripts\Activate.ps1` in PowerShell if your execution policy permits it. Activation applies only to the current terminal session. The commands above use the full Python path and work without activation.
 
-For your own conda environment, first run `conda activate <environment-name>`, then install and launch using that same interpreter. No pre-existing local environment name or ARM-specific environment folder is required or provided by this ZIP. The `amplifier-sim` commands later in this manual assume the environment is activated. Alternatively, use `.venv/bin/python -m amplifier_sim` on macOS/Linux or `.venv\Scripts\python.exe -m amplifier_sim` on Windows in place of `amplifier-sim`.
+If you use conda, run `conda activate <environment-name>` and use that interpreter for both installation and launch. The ZIP does not require or include a pre-existing local environment or an ARM-specific environment folder. Later `amplifier-sim` commands assume an activated environment. Without activation, substitute `.venv/bin/python -m amplifier_sim` on macOS/Linux or `.venv\Scripts\python.exe -m amplifier_sim` on Windows for `amplifier-sim`.
 
 ### 2.2 Installation Options
 
@@ -130,7 +130,7 @@ Run installation commands from the folder containing `pyproject.toml`, using you
 - FROG/HDF5 import: `python -m pip install ".[frog]"`; adds h5py.
 - Development tests require `python -m pip install pytest` separately. Quick PNG export requires Pillow: `python -m pip install Pillow`.
 
-For development, add `-e` before the package argument, for example `python -m pip install -e ".[ui,performance]"`, to make edits to the source visible without reinstalling. The separate development tests and historical research fixtures are not included in this distribution.
+For development, use `-e`, as in `python -m pip install -e ".[ui,performance]"`, so source edits take effect without reinstalling. This distribution does not include the separate development tests or historical research fixtures.
 
 ### 2.3 Checking the Installation
 
@@ -141,9 +141,9 @@ amplifier-sim models
 amplifier-sim validate configs/example.json
 ```
 
-The `validate` command loads the JSON, merges defaults, checks the configuration requirements, and prints the resulting configuration. Passing it does not establish that propagation results are numerically valid or that an experiment has been reproduced.
+The `validate` command reads the JSON, merges defaults, checks configuration requirements, and prints the resulting configuration. A successful check confirms that the configuration is accepted; it does not validate propagation results or establish agreement with experiment.
 
-In a separate development checkout that includes the test suite, install pytest and run `python -m pytest -q tests`. The full suite also checks historical research configurations and material data, which are not part of this ZIP.
+For a development checkout containing the test suite, install pytest and run `python -m pytest -q tests`. The full suite also checks historical research configurations and material data that are not included in this ZIP.
 
 If you see `No module named streamlit`, the current `python` usually differs from the interpreter in which Streamlit was installed. Check:
 
@@ -173,21 +173,21 @@ Build an interpretable model in stages:
 9. **Check convergence:** increase Nx/Ny/Nz; separately check the FFT windows and sampling for Seed and Pump along each axis, then increase temporal/spectral samples until the main results stop changing appreciably. For automatic axis-by-axis comparison, use `amplifier-sim convergence configs/example.json --factors 1 1.5 2 -o convergence.json`, or replace the configuration with your saved setup.
 10. **Run parameter sweeps:** scan Pump power or beam size only after the single-point configuration is credible.
 
-Save a JSON configuration whenever you add a module. This makes changes in output traceable to specific physical settings.
+Save the JSON configuration after adding each module so that output changes can be traced to a specific physical setting.
 
-For quantitative calculations, set `simulation.validation_mode` to `strict`. Failure of any blocking requirement marks the result invalid. An invalid strict CLI run returns exit code `2` and writes only `summary.invalid.json`, without committing new quantitative field files. The interface still allows a **complete diagnostic archive**, marked as non-quantitative, to be downloaded. It includes the run's configuration, 3D fields, optical planes, and warnings so that the failure can be reproduced. This differs from exporting a valid result. Existing quantitative output directories are not updated by that failed run; do not combine an older `fields.npz` with the new diagnostics.
+For quantitative calculations, set `simulation.validation_mode` to `strict`. Any blocking failure marks the result invalid. An invalid strict CLI run returns exit code `2` and writes only `summary.invalid.json`; it does not commit new quantitative field files. The interface still offers a **complete diagnostic archive**, marked non-quantitative, containing the run configuration, 3D fields, optical planes, and warnings needed to reproduce the failure. This diagnostic download is separate from valid-result export. A failed run leaves existing quantitative output directories unchanged, so do not pair an older `fields.npz` with the new diagnostics.
 
-Validity reports distinguish `blocking` failures from `warning` diagnostics. Blocking checks concern accounting, conservation, convergence, applicability, or actual periodic FFT boundaries. A warning may affect only a recorded plane, beam size, or M², so it must not automatically invalidate every power metric. Sweeps retain four states: valid, valid-with-warnings, completed-but-invalid, and execution-failed. They also preserve each metric's validity independently.
+Validity reports separate `blocking` failures from `warning` diagnostics. Blocking checks cover accounting, conservation, convergence, applicability, and actual periodic FFT boundaries. A warning may concern only a recorded plane, beam size, or M²; it does not necessarily invalidate power metrics. Sweeps record four states—valid, valid-with-warnings, completed-but-invalid, and execution-failed—and retain each metric's validity separately.
 
 Completed invalid operating points retain their raw diagnostic values. Valid 1D trends break at missing values, invalid metrics, and backend changes; invalid runs can optionally be displayed as red × marks. In live 2D sweeps, **Include raw metrics from validation-invalid grid points** adds available raw values to the heatmap and slice lines. It defaults to on in exploratory mode and off in strict mode; it does not change run validity. Disable it for quantitative comparisons. Archived-result analysis organizes trends by valid runs and valid metrics, displaying different actual Seed backends separately.
 
-All validation-invalid interface views, CLI outputs, and archives display `NON-QUANTITATIVE — VALIDATION FAILED`. Retaining a diagnostic result does not authorize quantitative interpretation. If `require_experimentally_calibrated_material=true`, the material snapshot must also include the sample identifier and calibration-data SHA-256, and `calibrated_parameters` must cover all `required_parameters`.
+Validation-invalid interface views, CLI outputs, and archives display `NON-QUANTITATIVE — VALIDATION FAILED`. Saved diagnostics remain unsuitable for quantitative interpretation. With `require_experimentally_calibrated_material=true`, the material snapshot must include a sample identifier and calibration-data SHA-256, and `calibrated_parameters` must cover every `required_parameters` entry.
 
 Material tables use `range_policy=record` by default and record clamping at the lower/upper boundary. To stop before calculation when values are out of range, set `material.spectroscopic_response.range_policy="error"`.
 
 By default, strict validation requires both positive and negative Seed energy residuals to be closed by named terms. To use the older one-sided check that only rejects artificial energy generation, explicitly set `simulation.strict_validation.require_named_external_losses=false`; `closed_seed_energy_ledger` is then marked not applicable. Combined ABCD/FFT tilt and the Nyquist occupancy of a tilted FFT carrier also enter the applicability checks. Quantitative strict ASE runs require an explicit `ase.radiative_lifetime_s`; the total upper-state lifetime, which may include nonradiative quenching, must not silently be treated as the radiative lifetime.
 
-Spatial-boundary checks are blocking only on internal propagation paths that actually use periodic transverse FFTs. The captured power when a hybrid Pump/Seed path converts an analytical ABCD field to the crystal FFT grid has a separate blocking check. If a source-plane display or ordinary recorded plane has too small a window, the program instead asks you to enlarge the diagnostic window before interpreting beam size/M². Failure to display the infinite-plane Gaussian tails does not by itself establish physical power clipping or FFT wraparound.
+Spatial-boundary checks block a result only for internal propagation paths that use periodic transverse FFTs. A separate blocking check measures captured power when a hybrid Pump/Seed path converts an analytical ABCD field to the crystal FFT grid. For a source display or ordinary recorded plane, an undersized window instead prompts you to enlarge the diagnostic window before interpreting beam size/M². Omission of infinite-plane Gaussian tails from a display does not by itself show physical clipping or FFT wraparound.
 
 ---
 
@@ -204,11 +204,11 @@ Inputs and model choices appear on the left. The current solver requirements, op
 
 Within Pump, the form is divided into A: Power and Active Absorption; B: Spatial Source and Propagation; C: Temporal Waveform and Spectrum; and D: Separate Optical Path and Radius Probes. Seed is divided into A: Pulse; B: Gain Transport; C: Polarization; D: Spatial; E: Complex Spectrum/CPA; and F: Separate Optical Path.
 
-The multipass area shows one set of templates, crystal encounters, and inter-pass paths. Legacy reverse-double-pass, fast pass-by-pass, and `optical_bench` controls are no longer separate parallel interfaces. When old JSON is loaded, it is first migrated to the unified `simulation.multipass` structure. The form and solver then operate only on that structure. You can download the migrated configuration directly; legacy fields are not carried into new operating points.
+The multipass area contains one set of templates, crystal encounters, and inter-pass paths. The legacy reverse-double-pass, fast pass-by-pass, and `optical_bench` controls have been consolidated. Loading an older JSON first migrates it to `simulation.multipass`; the form and solver then use that structure. Download the migrated configuration to save the updated format without carrying legacy fields into new operating points.
 
 File controls, Setup JSON, and material libraries are above the workspaces. Parameter sweeps are an optional tool below the run button. Each workspace retains fast and detailed models, with advanced solver overrides in secondary expandable sections. Switching workspaces does not remove fields that are temporarily hidden.
 
-After a JSON upload, the program checks the strict core schema, deeply merges defaults, and writes values back to the form. Unknown core keys raise errors. Plugin and future-version extension fields belong in `extras` or top-level `plugins`.
+After a JSON upload, the program checks the strict core schema, merges defaults recursively, and fills the form. Unknown core keys cause errors. Put plugin and future-version extension fields in `extras` or top-level `plugins`.
 
 ---
 
@@ -218,7 +218,7 @@ After a JSON upload, the program checks the strict core schema, deeply merges de
 
 ### 5.1 Setup JSON
 
-A Setup JSON defines a complete operating point: optical paths, material, Pump, Seed, grid, and solvers. After a successful upload, its values **automatically refill and refresh the form**; no separate Apply action is needed. A material-library record, by contrast, requires you to select an operating point and click Apply.
+A Setup JSON contains the optical paths, material, Pump, Seed, grid, and solvers for one operating point. A successful upload **automatically refills and refreshes the form**. Material-library records use a separate workflow: select an operating point, then click Apply.
 
 The program:
 
@@ -227,7 +227,7 @@ The program:
 - Checks units, ranges, and incompatible combinations.
 - Shows the actual resolved settings in the effective solver-stack display.
 
-For an incompatible combination, the form displays the requested value, the effective value, and the reason for the automatic adjustment. Once the constraint is removed, the original request is restored for fields still managed by that constraint. Imported file units, constant phase, dispersion reference wavelength, nonuniform caustic-probe positions, and six-face ASE reflectivities are retained; switching workspaces alone does not reset them. Download the current complete configuration and check the effective model rather than retaining screenshots alone.
+For incompatible settings, the form shows the requested value, the effective value, and the reason for adjustment. Removing the constraint restores the original request for fields still managed by that constraint. Imported file units, constant phase, dispersion reference wavelength, nonuniform caustic-probe positions, and six-face ASE reflectivities survive workspace changes. Download the complete current configuration and check the effective model; screenshots alone do not retain these settings.
 
 ### 5.2 Material-Library XML/JSON
 
@@ -272,7 +272,7 @@ Applying the material updates:
 
 The importer converts common Commercial App XML/normalized-JSON units to SI, including `ions/mm³→ions/m³`, `1/mm→1/m`, `mm²→m²`, `W/mm/K→W/m/K`, `N/mm²→Pa`, `g/mm³→kg/m³`, and `J/g/K→J/kg/K`. By default, material snapshots reject out-of-range doping, temperature, Pump wavelength, or Seed wavelength, recording the decision in `material.library.snapshot_range_contract`. Only an explicit `snapshot_out_of_range="edge"` permits a reduced-order edge-value extension outside the range.
 
-Data without a unique physical interpretation are not automatically connected to the solvers. For example, proprietary rate-line encodings for multiple dopants, complete nonequilibrium Stark networks, and 6×6 dimensionless strain-optic tensors are retained in provenance/available-data records. They are not guessed to be scalar cross sections or stress-optic coefficients in `Pa⁻¹`. A material-library parsing failure leaves manually entered configuration values unchanged.
+The solver does not automatically use data whose physical interpretation is ambiguous. Proprietary rate-line encodings for multiple dopants, complete nonequilibrium Stark networks, and 6×6 dimensionless strain-optic tensors remain in provenance/available-data records; they are not converted by assumption into scalar cross sections or stress-optic coefficients in `Pa⁻¹`. If material-library parsing fails, manually entered values remain unchanged.
 
 ### 5.3 Temperature-Surface Data
 
@@ -282,7 +282,7 @@ Material-library records may provide three levels of information:
 2. A separable model combining `σ(T)` with a normalized wavelength profile.
 3. A full two-dimensional `σ(T,λ)` table.
 
-Only the information level actually present in the record is imported. These data enter `material.spectroscopic_response`, but its default `mode=off` means importing a material alone does not automatically alter previous results.
+The importer uses only the information present in the record. Data are stored in `material.spectroscopic_response`; the default `mode=off` leaves the response disabled, so importing a material alone does not change previous results.
 
 ### 5.4 Creating a Traceable Material Snapshot
 
@@ -299,7 +299,7 @@ amplifier-sim materialize \
   -o configs/crzns_materialized.json
 ```
 
-The output embeds material parameters, the source-file hash, and the selected conditions, making it suitable for reproducible calculations and long-term retention. The default range policy is `error`. The example's `edge` explicitly requests a reduced-order edge extension for legacy data; it is recorded in warnings/provenance and must not be described as interpolation within the working range.
+The output stores material parameters, the source-file hash, and the selected conditions for reproducible calculations and long-term retention. The default range policy is `error`. In this example, `edge` explicitly permits a reduced-order extension using legacy data's edge values. That choice is recorded in warnings/provenance and does not constitute interpolation within the working range.
 
 ---
 
@@ -341,9 +341,9 @@ This replaces the FN step in each z cell with JOSA B photon-density/inversion tr
 - `retarded_pc`: retarded time, $T=t-z/v_g$, so time bins are independent of Nz.
 - `full_3d_pc`: fixes the three-dimensional phase-insensitive rate-model stack. Group-delay bin mixing uses an energy-conserving local-phase closure approximation. Diagnostics report this explicitly; it must not be interpreted as exact incoherent-channel propagation.
 
-The first three may fall back according to policy. Before fallback, the populations are restored to their state at the start of the Seed traversal, then `spectral_time`/FN recomputes from the same state. A fallback already selected by an initialization probe remains consistent throughout the run; an isolated pulse may return a runtime fallback result.
+The first three schemes can fall back according to the selected policy. The solver first restores populations to their state before the Seed traversal, then recomputes with `spectral_time`/FN from that same state. A fallback selected by an initialization probe remains in use for the whole run. An isolated pulse may also return a result after runtime fallback.
 
-For stateful mappings such as finite pulse trains, `pulse_map`, or thermal-optical fixed points, a backend change during the mapping invalidates that mapping for convergence and clears Anderson history. The calculation fails explicitly if the final state cannot be closed with one consistent backend. `full_3d_pc` raises an error rather than silently reducing fidelity.
+If a backend changes during a stateful mapping—a finite pulse train, `pulse_map`, or a thermal-optical fixed point—that mapping cannot count towards convergence, and Anderson history is cleared. The solver fails explicitly if one consistent backend cannot close the final state. `full_3d_pc` raises an error rather than silently reducing fidelity.
 
 #### `coherent_cpa`
 
@@ -356,7 +356,7 @@ Uses complex spectral fields and retains spectral amplitude, phase, and spatial 
 - Optional front/peak/tail transient-gain soft windows.
 - Multiphoton and free-carrier loss.
 
-`seed.coherent.fidelity_mode` further distinguishes the configured model, whole-pulse hybrid, axisymmetric Kerr, axisymmetric transient gain, and full reference transient-gain configurations. Axisymmetric paths retain radial structure and a finite set of azimuthal modes; sharing the CPA name does not make them arbitrary 3D complex-field models.
+`seed.coherent.fidelity_mode` selects among configured, whole-pulse hybrid, axisymmetric Kerr, axisymmetric transient gain, and full reference transient-gain configurations. Axisymmetric paths resolve radial structure and a finite set of azimuthal modes. They share the CPA name but do not represent an arbitrary 3D complex field.
 
 `axisymmetric.azimuthal_fidelity` may be `m0`, `m0_m1`, `m0_m1_m2_quadratic`, or `m0_m1_m2`. The m=0 model requires a centered, untilted circularly symmetric input. The m=1 terms retain decentering/tilt; elliptical and astigmatic inputs require m=2. For a single coherent field, the axisymmetric configuration requires input M²=1 along both axes, `spatio_spectral.model="shared_source"`, and a symmetric adaptive local operator. Projection loss, azimuthal residuals, radial-edge energy, and population conservation still have to pass diagnostic checks. Refine radial, angular, and gain-frequency sampling separately, and compare against a full-field reference point.
 
@@ -364,7 +364,7 @@ Uses complex spectral fields and retains spectral amplitude, phase, and spatial 
 
 #### `commercial_app_fast`
 
-This Commercial App/Gaussian-duct model is a reduced-order fast backend. Every crystal z layer and wavelength still reads the 3D populations, cross sections, and local gain, and commits the actual population exchange caused by active absorption/stimulated emission. The transverse field is projected to Gaussian q/second-moment states, retaining power, centroid, both beam radii, tilt, and quadratic wavefront. It is useful for broad screening and does not represent arbitrary complex-field BPM.
+The Commercial App/Gaussian-duct backend reduces the transverse field to Gaussian q/second-moment states, retaining power, centroid, both beam radii, tilt, and quadratic wavefront. At every crystal z layer and wavelength it still reads the 3D populations, cross sections, and local gain, and updates populations for active absorption and stimulated emission. This makes it suitable for broad screening, but it does not retain the arbitrary spatial structure of a complex-field BPM model.
 
 - `temporal_model="fixed_duration"`: closes peak intensity using the input effective pulse duration; it does not produce physically interpretable SPM broadening.
 - `temporal_model="effective_area_spm"`: calculates SPM, spectral feedback, and B-integral with a one-dimensional effective-area envelope. If `strong_field_effective_area` is also enabled, total multiphoton loss uses the exact Kth-order intensity moment of a 2D Gaussian. Free carriers/FCA/carrier refraction use an energy-equivalent scalar state, without constructing a full `x-y-t` field.
@@ -401,7 +401,7 @@ The unified multipass structure is `simulation.multipass`. Templates first compi
 - `execution_mode="sequential"`: completes the same encounter/routing plan one pass at a time, for backends such as `fluence` and `commercial_app_fast` that do not retain this type of resolved temporal packet.
 - `execution_mode="auto"`: selects causal execution when the resolved `spectral_time` configuration satisfies its requirements; otherwise selects sequential execution. This is recommended for new configurations.
 
-Useful geometry, losses, directions, delays, and backend overrides from legacy `counterpropagation`, `pass_mode/passes`, and `optical_bench` multipass settings are incorporated into this unified structure. The old solver modules and interface entry points have been removed. Old JSON is migrated before strict schema validation.
+The unified structure incorporates the geometry, losses, directions, delays, and backend overrides previously held in `counterpropagation`, `pass_mode/passes`, and `optical_bench`. The old solver modules and interface entry points have been removed. Older JSON is migrated before strict schema validation.
 
 ### 6.5 Multiphysics Coupling
 
@@ -413,7 +413,7 @@ The sequence is:
 Pump → populations → thermal field/Δn → final Seed
 ```
 
-This is fast and suitable for initial calculations. Seed does not modify the current Pump thermal solution unless Seed one-way postprocessing is selected.
+Use this fast sequence for initial calculations. Seed does not alter the current Pump thermal solution unless Seed one-way postprocessing is selected.
 
 #### `thermal_optical_fixed_point`
 
@@ -425,7 +425,7 @@ Pump complex field → absorption/populations/ASE → heat → stress/Δn
         └────────────── next Pump propagation ──────────────┘
 ```
 
-Local temperature-dependent cross sections and Seed heating can optionally join the loop. It requires FFT Pump propagation inside the crystal, a 3D steady-state thermal solution, and `thermal_3d` refractive index.
+The loop can also include local temperature-dependent cross sections and Seed heating. It requires FFT Pump propagation inside the crystal, a 3D steady-state thermal solution, and the `thermal_3d` refractive-index model.
 
 Parameters and monitored quantities include:
 
@@ -437,7 +437,7 @@ Parameters and monitored quantities include:
 
 Safeguarded Anderson fixed-point acceleration is enabled by default. It accepts only bounded, finite-state candidates whose predicted residual decreases. If the next measured residual worsens substantially, history is cleared automatically and relaxed iteration resumes. If periodic steady state is enabled internally, the next thermal-optical iteration reuses the previous periodic-boundary populations as its initial guess rather than restarting from the ground state. Disabling acceleration retains ordinary relaxed iteration. Excessive relaxation can oscillate; too little relaxation slows convergence.
 
-The outer iteration reports convergence only after its own residuals pass and the inner steady-state population solve or periodic map used in the current/final closure has explicitly converged. Populations at an inner iteration limit may seed the next numerical iteration, but are not accepted as physical solutions. That outer residual is treated as infinite and Anderson history is cleared. The result fields `population_solver_converged` and `nonconverged_population_iterations` make this condition auditable.
+The outer loop reports convergence only when its residuals pass and the inner steady-state population solve or periodic map converges in both the current iteration and final closure. Populations from an inner solve that reaches its iteration limit may initialize the next iteration, but are not accepted as a physical solution. The outer residual is then treated as infinite and Anderson history is cleared. Inspect `population_solver_converged` and `nonconverged_population_iterations` to check this condition.
 
 ### 6.6 Heating from Irreversible Seed Loss
 
@@ -451,7 +451,7 @@ Kerr is a pure phase effect and does not enter the heat source. Multiphoton loss
 
 #### Without Periodic Steady State
 
-`population_dynamics=steady_state` is only a Pump-only CW steady state; it does not include repeated Seed extraction. The final Seed shot uses those post-pumping populations.
+`population_dynamics=steady_state` solves the Pump-only CW steady state, without repeated Seed extraction. The final Seed shot uses those post-pumping populations.
 
 For a bounded operating-window test, combine `simulation.pulse_train_initialization="cycle_average"` with `pulse_train_cycles=2`. The program first calculates an average-population initial guess, then executes two complete Pump-cycle→Seed-pulse mappings. The `2` counts only the two physical pulses after initialization, not internal cycle-average probes. `pulse_train_initializer` and `pulse_history` record the two parts separately. `auto` may use the same initializer when applicable. If upconversion/cross relaxation makes the average initializer inapplicable, the program falls back. An explicitly selected cycle-average initializer that would discard long-lived free-carrier memory fails during configuration checking; `auto` skips that initializer instead.
 
@@ -467,11 +467,11 @@ $$
 
 Each self-consistent iteration propagates Pump and average Seed again, then solves steady-state populations. This is suitable for high repetition rates when each pulse causes only a small local population jump. Iteration counts do not represent physical elapsed cycles. The stopping criterion uses the true algebraic closure residual before multiplication by the relaxation factor; reducing relaxation changes stability and speed without silently loosening the physical tolerance.
 
-The final output is still calculated by applying one pulse with the selected FN/JOSA/CPA solver to the converged populations, then multiplying by repetition rate. The interface compares the average probe with the final pulse.
+The selected FN/JOSA/CPA solver then propagates one final pulse through the converged populations. Its energy is multiplied by repetition rate for average power. The interface compares this final pulse with the average probe.
 
 #### `reduced_pulse_map`
 
-This intermediate-cost periodic map is available only for `coherent_cpa`. It first converges discrete-cycle populations with a low-dimensional whole-pulse proxy, then propagates one final reported pulse with the currently configured full coherent backend. Strict validation compares the proxy and final propagation populations and outputs; convergence of the proxy alone does not establish a full CPA fixed point.
+Available only for `coherent_cpa`, this intermediate-cost method converges discrete-cycle populations with a low-dimensional whole-pulse proxy, then uses the configured full coherent backend for the final reported pulse. Strict validation compares populations and outputs from the proxy and final propagation. A converged proxy does not by itself establish a full CPA fixed point.
 
 - `model="phase_insensitive"`: a phase-insensitive whole-pulse proxy with controlled `temporal_bins`/`spectral_bins`.
 - `model="axisymmetric_coherent_kerr"`: an axisymmetric coherent Kerr proxy over frequency×time×radius, requiring `seed.coherent.fidelity_mode="axisymmetric_kerr"`.
@@ -491,7 +491,7 @@ Iteration continues until both cycle-boundary populations and output energy conv
 
 The default `pulse_map_initialization=auto` uses `cycle_average` to form a numerical initial guess when the longest population-memory lifetime spans many repetition periods. The strict `pulse_map` then corrects it. The average steady state only supplies the initial guess; it does not change the final fixed-point equations. Initialization is skipped automatically for upconversion/cross relaxation or direct gain override.
 
-A low-memory Anderson method then accelerates complete-cycle mappings. The program returns to ordinary mapping if a candidate produces negative populations, local particle-number nonconservation, poor residual prediction, or a worse next residual. With acceleration enabled, cycle counts mean the number of complete-cycle map evaluations rather than a continuous sequence of physically elapsed pulses.
+A low-memory Anderson method accelerates complete-cycle mappings. It returns to ordinary mapping if a candidate produces negative populations, violates local particle-number conservation, predicts the residual poorly, or gives a worse residual at the next evaluation. With acceleration, cycle counts describe complete-cycle map evaluations rather than a continuous sequence of physically elapsed pulses.
 
 When `coherent_cpa + strong_field_time_domain + rate_equation` are all enabled, periodic carrier state supplies a third stopping condition. By default it compares FCA optical depth, carrier phase, and FCA absorbed energy produced in adjacent cycles. You can explicitly select the maximum relative change of the full carrier-density field instead. The local scalar carrier fixed point in Commercial App is not this global 3D state, so that selector is not displayed for Commercial App.
 
@@ -556,7 +556,7 @@ Both use one **Variation (%)** value:
 
 Multiple directions combine multiplicatively, followed by volume-average or peak normalization. The interface displays central xy/xz/yz slices and minimum, average, and maximum absolute concentrations in real time. Legacy JSON surface-exponential profiles, center profiles with a variation length, superposition strength, and floors remain computable but are not exposed in the standard form.
 
-`normalization=volume_average` preserves the overall volume-average ion density and total ion count; changing the profile does not silently alter total doping. With `peak`, the base density represents the peak.
+`normalization=volume_average` preserves volume-average ion density and total ion count as the profile changes. With `peak`, the base density specifies the peak value.
 
 The same density field is used for initial populations, rate equations, Pump absorption, Seed gain, local lifetime response, and output. Zero-doped crystal cells remain zero. Mean upper-state fractions/inversion in progress displays and sweeps are volume-weighted only over positively doped crystal cells, excluding undoped end caps from the denominator.
 
@@ -576,7 +576,7 @@ Pump excites the ground state to a Pump level, which rapidly relaxes to the uppe
 
 #### Four Levels
 
-All four populations are retained: ground, lower, upper, and pump. Pump excites the Pump level; that level relaxes to upper; the signal transition reaches lower; and lower relaxes to ground. This is not reduced to two levels.
+The model retains all four populations: ground, lower, upper, and pump. Pump excites the Pump level, which relaxes to upper. The signal transition transfers population to lower, followed by relaxation to ground. All four levels participate in the calculation.
 
 #### Custom N Levels
 
@@ -598,7 +598,7 @@ A nonlinear-process fragment is:
 }
 ```
 
-This describes one reaction only. Names such as `transfer` must be declared in the custom level list; the fragment is not a complete runnable Setup. Coefficient units depend on total reaction order. Nonlinear population processes currently require transient/pulse-map evolution. The linear algebraic steady-state solver does not invent an unknown nonlinear closed-form solution.
+The fragment defines one reaction. Declare names such as `transfer` in the custom level list before using it; the fragment alone is not a complete Setup. Coefficient units depend on total reaction order. Nonlinear population processes require transient/pulse-map evolution because the linear algebraic steady-state solver does not solve their nonlinear closure.
 
 Nonlinear reactions may use `single_step` or `adaptive_substeps`. The latter subdivides a population time step according to the current maximum fractional reactant-depletion rate and recomputes upconversion/cross-relaxation rates at every substep. It is more robust for strongly nonlinear cases. A smaller `target_fractional_depletion` is more accurate but slower; `max_substeps` limits runtime. This option adds no work if there are no nonlinear reactions.
 
@@ -649,7 +649,7 @@ First choose a Pump source-parameter definition:
 
 `super_gaussian_exponent` is the complete intensity exponent `p` in `exp[-2(r/w)^p]`; `p=2` is Gaussian. JSON, form, preview, and solver share one normalized definition rather than converting it repeatedly in different modules.
 
-`geometric_efficiency` lies between 0 and 1 and represents only measured/unmodeled upstream losses before light enters the modeled optical path. It multiplies emitted power, while the result ledger retains nominal power, effective source power, and that efficiency. Stochastic ray tracing separately computes element, interface, aperture, crystal-interception, and side-leakage losses. Do not fit those modeled losses again with `geometric_efficiency`.
+`geometric_efficiency` ranges from 0 to 1 and accounts for measured or unmodeled upstream losses before light enters the modeled path. It scales emitted power; the result ledger retains nominal power, effective source power, and efficiency. Stochastic ray tracing separately calculates element, interface, aperture, crystal-interception, and side-leakage losses. Fitting those same losses with `geometric_efficiency` would count them twice.
 
 All three source definitions are normalized at the same configuration layer; JSON, interface, live preview, and final solver do not each repeat the conversion. Source definition and propagation algorithm have different roles. `emitter_na` retains native emitter radius and NA, which directly define stochastic-ray phase space in `stochastic_raytrace`. `super_gaussian_abcd` propagates beam size with the second-moment M² below while preserving the SG intensity shape. Ordinary ABCD/FFT field solvers use an M² field proxy.
 
@@ -684,7 +684,7 @@ A waist normally means the profile-scale intensity $1/e^2$ radius; `emitter_na` 
 - `abcd` / `super_gaussian_abcd` / `hybrid_abcd_fft` / `fft`: measured from the Pump LASER source plane. Pre-crystal distances and lenses participate in propagation.
 - `stochastic_raytrace + emitter_na`: rays are defined directly by positions and NA at the `z=0` emitter face; `focus_z_m` does not enter ray sampling. A waist-type source proxy instead follows its corresponding caustic/waist definition.
 
-This reference-plane distinction is a common cause of inconsistent optical paths. The interface changes the field label according to the propagation mode.
+Check the reference plane when optical paths disagree. The interface labels this field according to the selected propagation mode.
 
 ### 8.4 Pump Propagation Models
 
@@ -698,7 +698,7 @@ A Gaussian-envelope propagation backend. External Gaussian paths propagate analy
 
 Internal depletion uses a conservative closure: scalar remaining power plus a Gaussian envelope renormalized at each z plane. Each layer first computes active/passive Beer–Lambert absorption, then projects the remaining power onto the normalized envelope for the current ABCD radius, centroid, and orientation. Output reports absorption, transverse escape, and power-accounting residual separately.
 
-This preserves a self-similar Gaussian shape and suits fast Gaussian operating-point calculations. It does not resolve transverse hole burning caused by locally saturated absorption. Use `hybrid_abcd_fft` or `fft` for depletion-induced transverse deformation, aperture diffraction, or 3D thermal aberrations.
+The self-similar Gaussian shape is suitable for fast Gaussian operating-point calculations, but cannot resolve transverse hole burning from locally saturated absorption. Choose `hybrid_abcd_fft` or `fft` for depletion-induced transverse deformation, aperture diffraction, or 3D thermal aberrations.
 
 #### `super_gaussian_abcd`
 
@@ -733,7 +733,7 @@ Thus rate-equation intensity, active/passive absorption, and ray-power depletion
 
 `pump.raytrace.deposition_model` defaults to `nearest_cell_track_length` to preserve existing JSON behavior. `bilinear_track_length` uses the same conservative bilinear weights to interpolate absorption/thermo-optic gradients and deposit intensity/heat, reducing jumps as rays cross cells. Neither model performs exact ray-segment intersection with every voxel, so both require ray-count and grid-convergence checks.
 
-This path suits incoherent, high-M² end pumping with known emitter face and NA. It is currently a sequential paraxial ray solver. It does not include nonsequential multiple reflections in side-pumped cavities, scattering/rough surfaces, ray-level polarization evolution, or arbitrary CAD surfaces. These limits appear explicitly in diagnostics; this mode must not be described as a complete Zemax-level nonsequential tracer.
+Use this path for incoherent, high-M² end pumping when the emitter face and NA are known. The solver uses sequential paraxial rays; it omits nonsequential multiple reflections in side-pumped cavities, scattering/rough surfaces, ray-level polarization evolution, and arbitrary CAD surfaces. Diagnostics state these limits. It is not a complete Zemax-level nonsequential tracer.
 
 Start alignment with 10,000–100,000 rays, then check convergence using at least two random seeds and four times as many rays. A warning appears when more than 10% of populated deposition cells have fewer than 30 effective weighted ray-segment samples. Effective sample count uses squared actual path contributions; bilinearly splitting one segment among four cells does not count as four independent samples. Increase ray count or reduce deposition-grid resolution rather than interpreting Monte Carlo granularity as real hot spots.
 
@@ -763,7 +763,7 @@ For analytical waveforms, `power_mode="peak"` means the continuous waveform's pe
 
 `average` normalizes the discrete-window average power to `power_W`. For relative-power files, `peak` normalizes the interpolated samples by their sampled peak. Reported waveform `peak_power_W` is the sampled peak and may be lower than the configured continuous peak for coarsely binned rectangular pulses.
 
-At positive repetition rates, analytical pulse-center delays are reduced modulo the period; single-shot preparation does not wrap around. Files are interpolated on their own time axes. Do not assume analytical-waveform `delay_s` shifts a file.
+At positive repetition rates, analytical pulse-center delays are reduced modulo the period. Single-shot preparation has no wraparound. File waveforms are interpolated on their own time axes; analytical-waveform `delay_s` does not necessarily shift a file.
 
 ### 8.6 Time Samples per Cycle
 
@@ -803,23 +803,23 @@ Specify:
 - The repetition rate $f_{rep}$.
 - The interface displays the input average power $E_sf_{rep}$ as you edit these values.
 
-The output average power is the final reported pulse energy multiplied by the same system repetition rate.
+Output average power equals the final reported pulse energy multiplied by the same system repetition rate.
 
 ### 9.2 Time-domain, frequency-domain, and dual-domain input
 
 #### Time-domain definition
 
-Choose a Gaussian, sech², rectangular, or super-Gaussian pulse, or import a time-domain file. The time domain is the primary input. If no temporal phase is supplied, a flat phase is assumed. The program transforms the input using the convention in Section 9.6 to produce a read-only spectral preview.
+Choose a Gaussian, sech², rectangular, or super-Gaussian pulse, or import a time-domain file. The time domain is the primary input. If no temporal phase is supplied, a flat phase is assumed. The program uses the convention in Section 9.6 to generate a read-only spectral preview.
 
 #### Frequency-domain definition
 
-Choose a monochromatic, Gaussian, Lorentzian, or super-Gaussian spectrum, or import a spectral file. The frequency domain is the primary input. If no spectral phase is supplied, a flat phase is assumed. The convention in Section 9.6 is used to produce a read-only temporal preview.
+Choose a monochromatic, Gaussian, Lorentzian, or super-Gaussian spectrum, or import a spectral file. The frequency domain is the primary input. If no spectral phase is supplied, a flat phase is assumed. The program uses the convention in Section 9.6 to generate a read-only temporal preview.
 
 #### Dual-intensity constraints
 
-If both temporal intensity and spectral intensity are supplied without phase, alternating projections are used to find a feasible complex field. This solution is generally not unique and does not replace FROG, SPIDER, or d-scan measurements.
+When temporal and spectral intensities are both supplied without phase, the program uses alternating projections to find a compatible complex field. The solution is generally not unique, so it cannot replace FROG, SPIDER, or d-scan measurements.
 
-An imported configuration may also retain `seed.pulse_definition.domain="independent"`: the temporal and spectral intensities are described independently, including a valid monochromatic spectrum. These two marginal distributions have not been established as a Fourier-consistent representation of the same complex field. Loading this mode into the form does not convert it into a Gaussian broadband input. Recovering the actual phase requires measured constraints or an explicitly selected complex-field input definition.
+An imported configuration may also retain `seed.pulse_definition.domain="independent"`: the temporal and spectral intensities are described independently, including a valid monochromatic spectrum. The two marginal distributions are not known to describe the same Fourier-consistent complex field. Loading this mode into the form does not convert it into a Gaussian broadband input. To recover the actual phase, provide measured constraints or explicitly select a complex-field input definition.
 
 ### 9.3 Input file formats
 
@@ -839,14 +839,14 @@ wavelength_nm, intensity, phase_rad
 
 Intensities may be normalized. Absolute spectral-energy input can use J/bin or J/nm; the program integrates the spectrum and updates the single-pulse energy.
 
-Table units are explicitly specified with `time_unit` and `wavelength_unit`. Supported time units are `s/ms/us/ns/ps/fs`, and supported wavelength units are `m/um/nm`. The same conversions apply to Pump, Seed, coherent complex fields, separate phase files, and cross-section tables. Unknown units cause an error before propagation rather than being silently interpreted as SI. `energy_per_bin_J` denotes the integrated energy of each native sampling bin. Even for nonuniform samples, conversion to a uniform frequency grid first divides by each native frequency-bin width so that the spectral shape is preserved.
+Specify table units with `time_unit` and `wavelength_unit`. Supported time units are `s/ms/us/ns/ps/fs`, and supported wavelength units are `m/um/nm`. The same conversions apply to Pump, Seed, coherent complex fields, separate phase files, and cross-section tables. Unknown units are rejected before propagation; the program does not assume they are SI. `energy_per_bin_J` denotes the integrated energy of each native sampling bin. To preserve the spectral shape, conversion to a uniform frequency grid first divides each bin's energy by its native frequency-bin width, including for nonuniform samples.
 
 ### 9.4 Temporal FWHM and spectral FWHM
 
-The time-bandwidth product uniquely relates the two widths only for a transform-limited pulse with a known shape and phase. Actual inputs may include GDD/TOD or a non-Gaussian spectrum, so the program does not force the widths to remain linked.
+The time-bandwidth product uniquely relates these widths only when the pulse is transform limited and its shape and phase are known. Because actual inputs may include GDD/TOD or a non-Gaussian spectrum, the program allows the widths to be specified independently.
 
 Both the temporal and spectral widths of analytic super-Gaussian inputs use
-`exp[-ln(2)|2u/FWHM|^(2*order)]`. The entered width is therefore the exact intensity or spectral-density FWHM for every order; the order is not incorrectly used as a width conversion factor. For file inputs, FWHM is determined by the sampled curve.
+`exp[-ln(2)|2u/FWHM|^(2*order)]`. The entered width is therefore the exact intensity or spectral-density FWHM at every order. Changing the order does not introduce a width conversion factor. For file inputs, FWHM is determined by the sampled curve.
 
 With `spectral_density_domain="wavelength"`, `bandwidth_fwhm_m` is the wavelength-density FWHM symmetric about the peak wavelength. With `spectral_density_domain="frequency"`, entering `bandwidth_fwhm_Hz` directly is preferred. Alternatively, specify only `bandwidth_fwhm_m`: the program retains `wavelength_m` as the peak wavelength and preserves the **total** FWHM after mapping back to wavelength coordinates, but the two half-maximum wavelengths will not be symmetric about the peak. `bandwidth_fwhm_m` and `bandwidth_fwhm_Hz` cannot both be positive.
 
@@ -861,19 +861,19 @@ Supplying only spectral intensity and assuming flat phase produces the transform
 - Independent input uses `seed.temporal.sample_count` and `seed.spectrum.sample_count` for temporal and spectral discretization.
 - `seed.coherent.sample_count`: the requested number of complex spectral samples for independently constructed CPA input. Fourier-linked input can use the actual `seed.pulse_definition` grid directly, so consult the sample count in the run diagnostics.
 
-These sample counts belong to different stages and cannot substitute for one another. In particular, Commercial App spectral feedback requires the source spectrum itself to contain multiple effective samples. Increasing only `spectral_feedback_bin_count` cannot turn monochromatic or zero-bandwidth input into a broadband source. When increasing `span_fwhm`, also increase the source-spectrum sample count. Check convergence separately for source discretization, transport rebinning, and feedback bins.
+Each sample count controls a different stage; increasing one does not replace the others. In particular, Commercial App spectral feedback requires the source spectrum itself to contain multiple effective samples. Increasing only `spectral_feedback_bin_count` cannot turn monochromatic or zero-bandwidth input into a broadband source. When increasing `span_fwhm`, also increase the source-spectrum sample count. Check convergence separately for source discretization, transport rebinning, and feedback bins.
 
-More samples do not automatically improve accuracy: the temporal window and spectral span must also be sufficient. Too few samples miss peaks or narrow structure; too many substantially increase the FFT and gain-update cost of every z step.
+Accuracy also depends on sufficient temporal and spectral coverage, not just the sample count. Too few samples miss peaks or narrow structure; too many substantially increase the FFT and gain-update cost of every z step.
 
-The Fourier grid includes broad, nearly zero-energy padding to support temporal sampling. Before forming physical wavelength-resolved solver bins, the program trims numerical tails with a combined cumulative energy of no more than approximately `1e-12`, then normalizes and rebins the remainder. This prevents low-frequency padding from extending the wavelength axis by several micrometers or consuming the limited wavelength bins. Coherent CPA itself retains the full FFT grid.
+The Fourier grid includes broad padding regions with nearly zero energy to support temporal sampling. Before forming physical wavelength-resolved solver bins, the program trims numerical tails with a combined cumulative energy of no more than approximately `1e-12`, then normalizes and rebins the remainder. This prevents low-frequency padding from extending the wavelength axis by several micrometers or consuming the limited wavelength bins. Coherent CPA itself retains the full FFT grid.
 
-The Fourier spectral preview does not directly plot integrated energies from uniform frequency bins against a nonuniform wavelength axis. It maps the frequency-bin boundaries to wavelength widths and displays wavelength spectral density in `J/nm`. Its integral and FWHM are therefore consistent with wavelength-density semantics.
+The Fourier spectral preview does not directly plot integrated energies from uniform frequency bins against a nonuniform wavelength axis. It maps the frequency-bin boundaries to wavelength widths and displays wavelength spectral density in `J/nm`. Its integral and FWHM therefore both refer to wavelength spectral density.
 
 ### 9.6 Spectral phase
 
 The common temporal convention is `E(t)=Σ E(ω) exp(−iωt)`, with spectral propagation phase multiplied by `exp(+iφ)`. Under NumPy's sign convention, **spectrum-to-time uses FFT, and time-to-spectrum uses IFFT**, with `norm="ortho"` and the corresponding axis shifts. Spatial diffraction FFTs use their own coordinate conventions. Positive GD shifts the pulse to later times; with positive GDD, high-frequency blue components arrive later than low-frequency red components. Coherent diagnostics record `fourier_convention="exp_minus_i_omega_t"`. The same convention is used for input construction, phase retrieval, previews, CPU and experimental GPU calculations, and propagated temporal results.
 
-Before importing an external phase file, check the instrument's temporal sign convention, frequency/wavelength ordering, and reference wavelength. The program does not automatically infer the convention or conjugate the data. Asymmetric pulse, chirp, and carrier-timing results obtained with an older sign implementation must be recalculated; changing axis labels alone is insufficient.
+Before importing a phase file, check the instrument's temporal sign convention, the frequency/wavelength ordering, and the reference wavelength. The program neither infers the convention nor conjugates the data automatically. Asymmetric pulse, chirp, and carrier-timing results obtained with an older sign implementation must be recalculated; changing axis labels alone is insufficient.
 
 The phase is expanded about the reference angular frequency:
 
@@ -896,13 +896,13 @@ The Seed section provides separate controls for:
 - Compressor phase.
 - A separate phase file or phase columns within intensity files.
 
-`constant_phase_rad` and `reference_wavelength_m` are retained in the configuration. Changing the Seed center wavelength does not automatically overwrite an explicitly specified dispersion reference wavelength. If both intensity and phase were measured after the ZnSe, do not add the same ZnSe GDD again. If only intensity is available, explicitly state how the missing phase is supplied.
+`constant_phase_rad` and `reference_wavelength_m` are retained in the configuration. Changing the Seed center wavelength does not automatically overwrite an explicitly specified dispersion reference wavelength. If both intensity and phase were measured after the ZnSe, do not add the same ZnSe GDD again. If only intensity is available, specify how the missing phase will be supplied.
 
 ### 9.7 Spatial beam, M², and focus
 
 The Seed supports separate x/y waist radii, M², super-Gaussian orders, offsets, rotation, wavefront curvature, incidence angles, and astigmatic focal positions `focus_x_m/focus_y_m`.
 
-M² describes the second-moment diffraction rate; it does not automatically recover the actual transverse-mode phase. The optional `hermite_gaussian` maximum-entropy approximation constructs an incoherent HG intensity mixture from M² and the maximum mode order. It preserves second moments and is a fast scalar reduction. `incoherent_hg` uses the same maximum-entropy weights but propagates every HG-mode/wavelength combination as a separate synchronized channel. Each mode independently experiences apertures, diffraction, local gain, and thermal phase. All channels share the population in the same time/z cell and are summed incoherently at the end.
+M² specifies the diffraction rate of the beam's second moments; it does not determine the actual transverse-mode phase. The optional `hermite_gaussian` maximum-entropy approximation constructs an incoherent HG intensity mixture from M² and the maximum mode order. It preserves second moments and is a fast scalar reduction. `incoherent_hg` uses the same maximum-entropy weights but propagates every HG-mode/wavelength combination as a separate synchronized channel. Each mode independently experiences apertures, diffraction, local gain, and thermal phase. All channels share the population in the same time/z cell and are summed incoherently at the end.
 
 #### Maximum HG mode order
 
@@ -914,11 +914,11 @@ $$
 
 so at least $N\ge\lceil(M^2-1)/2\rceil$ is required. The interface raises the minimum allowed order to this bound. Increasing the order further permits a broader maximum-entropy weight distribution; it does not change the requested M². The x/y weights are solved independently and combined as a Cartesian product, with incoherent addition between modes.
 
-`incoherent_hg` also supports `maximum_total_order`, propagating only modes satisfying `n_x+n_y≤N_total`. `null` selects the full x/y Cartesian product. The total-order truncation must still represent the specified M² on both axes, and the final mode count must not exceed `maximum_propagated_modes`. These are explicit computation budgets; modes are not silently discarded to fit memory.
+`incoherent_hg` also supports `maximum_total_order`, propagating only modes satisfying `n_x+n_y≤N_total`. `null` selects the full x/y Cartesian product. The total-order truncation must still represent the specified M² on both axes, and the final mode count must not exceed `maximum_propagated_modes`. These limits set the computation budget. The program does not discard modes silently to fit memory.
 
 Under **② Beams → Seed → Spatial beam, M², and transverse modes**, select the option for propagating HG modes individually with shared populations, then enable the radial three-mode option for HG00, HG10, and HG01, using only m=0, ±1. The form displays total order 1, capacity 3, the actual nonzero modes, and their energy fractions. For M²=1.15 on both axes, the weights are 85%, 7.5%, and 7.5%. Azimuthal order m and total HG order are different quantities; enabling three modes does not enable azimuthal m=2. Disable the option to return to full x-y propagation.
 
-Changing M² in the form retains the current source waist radii and focal positions; it does not automatically keep the minimum air waist after the lens fixed. To hold that waist fixed, back-calculate the source-plane q parameters from the optical system, then enter the corresponding source waist radii and focal positions.
+Changing M² in the form leaves the source waist radii and focal positions unchanged, so the minimum waist in air after the lens is not held fixed. To hold that waist fixed, back-calculate the source-plane q parameters from the optical system, then enter the corresponding source waist radii and focal positions.
 
 `effective_m2` does not construct an explicit HG mode set; it uses M² only in the Gaussian/q-parameter diffraction law. None of the three approaches can uniquely reconstruct unmeasured mutual intensity or actual mode weights from M² alone. `incoherent_hg` provides propagation of individual modes, not a unique reconstruction of the input. When a sampled complex field is retained, output M² is recalculated from its spatial/angular-spectrum second moments instead of copying input M². Uniform grids use spectral derivatives, and nonuniform grids use finite differences. If inadequate sampling drives the calculated value below the physical lower bound, the result requests a larger or finer optical window.
 
@@ -932,15 +932,15 @@ The **Seed gain transport** controls display the temporal backend and spatial cl
 - `gaussian_mode_overlap` is a constrained Gaussian-amplification comparison. Within each z cell, a half-step of diffraction and thermal phase is followed by integration of the three-dimensional local gain against the current Gaussian intensity to obtain one effective gain. Only the total beam power changes. The subsequent second-moment projection preserves power, centroid, both radii, tilt, and quadratic wavefront while discarding higher-order aberrations and gain guiding.
 - `parabolic_gain_fit` fits the actual three-dimensional active gain to an axis-aligned quadratic gain duct within an ellipse defined by `fit_radius_x/y_m` at each z layer, then applies it to the complex field. Outside the ellipse, the original local gain is used. `minimum_gain_m_inv` clamps only the fitted values inside the ellipse and may be negative when genuine reabsorption is present. This implements the Commercial App Gauss-BPM spatial closure without changing Pump, level populations, cross sections, lifetimes, or the input beam.
 
-`gaussian_mode_overlap` currently requires monochromatic `fluence`, `gain_saturation=false`, a Gaussian or first-order super-Gaussian beam, and `effective_m2` or pure HG00. Axis-aligned ellipses and circular beams at any orientation are allowed. Rotated ellipses, higher HG modes, wavelength-resolved input, JOSA, and CPA require `local_field`. These restrictions prevent combinations that happen to broadcast numerically but lack a defined physical coupling.
+`gaussian_mode_overlap` currently requires monochromatic `fluence`, `gain_saturation=false`, a Gaussian or first-order super-Gaussian beam, and `effective_m2` or pure HG00. Axis-aligned ellipses and circular beams at any orientation are allowed. Rotated ellipses, higher HG modes, wavelength-resolved input, JOSA, and CPA require `local_field`. These restrictions exclude combinations for which array broadcasting works but the physical coupling is undefined.
 
-`parabolic_gain_fit` currently requires a CW Seed and a resolved backend of `fluence` or `commercial_app_fast`. The `fluence` cycle-averaged steady state uses the fitted stationary-photon-flux closure; Commercial App retains its own Gaussian-q transverse state. The fitting ellipse must cover enough active grid cells. Its center, radii, minimum gain, and layer-by-layer residuals are recorded in the diagnostics.
+`parabolic_gain_fit` currently requires a CW Seed and a resolved backend of `fluence` or `commercial_app_fast`. The `fluence` cycle-averaged steady state uses the fitted stationary-photon-flux closure; Commercial App retains its own Gaussian-q transverse state. The fitting ellipse must contain enough active grid cells. Its center, radii, minimum gain, and layer-by-layer residuals are recorded in the diagnostics.
 
 `record_axial_diagnostics=true` saves input/output energy or average power, effective active/passive/net gain, coherent Gaussian-projection overlap, and second-moment radii for every pass and z cell. The cycle-averaged steady state and final pulse use the same spatial closure; an inconsistent combination fails configuration checks. `summary.signal.gain_transport` also records the backend, whether gain guiding is allowed, the maximum cell gain exponent, safety clipping of positive exponents, minimum projection overlap, any subsequent field reshaping in the output optical train, and axial samples. Active extraction and passive loss share the same cell-averaged-field ledger. If safety clipping is activated, the ledger is scaled consistently so that ions do not release unclipped energy into an already clipped field.
 
 #### Local thermal lens for sampled fields
 
-This is a separate operator from spatial gain closure. `seed.thermal_lens.model="sampled_phase"` directly uses the sampled three-dimensional thermal refractive-index phase. `local_parabolic` fits a local quadratic thermal lens inside manually specified elliptical radii at every z layer, then applies the fitted phase in the sampled-field propagation of `spectral_time`, JOSA, and `coherent_cpa`. `full_xy` retains the xy cross term; `axis_aligned` retains only the x/y astigmatic terms. If the fitting center is not specified, it follows the current beam center. Commercial App Fast does not read this root-level field; it uses `seed.commercial_app_fast.thermal_lens`. The fast `fluence` backend also does not consume the sampled-field local thermal lens. The form displays these controls only for backends that use them.
+The local thermal lens and spatial gain closure are separate operators. `seed.thermal_lens.model="sampled_phase"` directly uses the sampled three-dimensional thermal refractive-index phase. `local_parabolic` fits a local quadratic thermal lens inside manually specified elliptical radii at every z layer, then applies the fitted phase in the sampled-field propagation of `spectral_time`, JOSA, and `coherent_cpa`. `full_xy` retains the xy cross term; `axis_aligned` retains only the x/y astigmatic terms. If the fitting center is not specified, it follows the current beam center. Commercial App Fast does not read this root-level field; it uses `seed.commercial_app_fast.thermal_lens`. The fast `fluence` backend also does not consume the sampled-field local thermal lens. These controls appear only when the selected backend uses them.
 
 ### 9.9 Jones polarization and thermo-photoelastic birefringence
 
@@ -955,7 +955,7 @@ $$
 
 and the field is rotated back into the x/y basis. The photoelastic term uses the spatial temperature difference relative to the axis of each z slice, not the absolute rise above coolant temperature. Uniform heating therefore produces only the common `material.dn_dT_per_K` thermal phase, without spurious stress birefringence. The current implementation requires monochromatic `fluence`, `local_field`, `thermal_3d`, and `material.mechanical.stress_model="none"`. The last requirement prevents double counting of scalar `Δn_stress` and the Jones photoelastic term. This reduced expression applies only to approximately axisymmetric end pumping and isotropic mechanical boundaries; it is not a full mechanical-equilibrium FEM for rectangular crystals, clamping stresses, or arbitrary crystal orientations.
 
-Results retain integrated Stokes parameters, parallel/orthogonal analyzer powers relative to the input polarization, complex-field second-moment M² for both analyzer channels, and `output_jones_field`. The orthogonal-analyzer fraction is only an ideal-analyzer diagnostic; it is not automatically deducted from total power. If experimental M² is measured after an output polarizer, compare with `parallel_analyzer_beam_quality` rather than the polarization-insensitive total-field M².
+Results retain integrated Stokes parameters, parallel/orthogonal analyzer powers relative to the input polarization, complex-field second-moment M² for both analyzer channels, and `output_jones_field`. The orthogonal-analyzer fraction describes an ideal analyzer. The program does not automatically deduct it from total power. If experimental M² is measured after an output polarizer, compare with `parallel_analyzer_beam_quality` rather than the polarization-insensitive total-field M².
 
 ### 9.10 Spatial-spectral coupling
 
@@ -973,17 +973,17 @@ Available modes are:
 - `chromatic_parametric`: power-law/linear parameters based on wavelength offsets.
 - `wavelength_table`: interpolation of a wavelength-by-wavelength table.
 
-This describes the spatial part of $E(\omega,x,y)$, which is distinct from the spectral phase represented by GDD/TOD.
+These settings describe the spatial part of $E(\omega,x,y)$. GDD/TOD instead describe spectral phase.
 
 ### 9.11 Coherent CPA and transient gain
 
 **Protected temporal-window tails (2026-09-14):** enable the option for protecting the temporal soft-window tails, with one window on each side, in the Seed coherent settings. The central cumulative-energy coverage (%) defines equal-energy tails, not a peak-height threshold. The total window count includes the two tails: 99% coverage with 9 windows means 1 left-tail window, 7 central windows, and 1 right-tail window. Enabling the option fixes the total count with identical initial and maximum values; it does not automatically increase to 65. Depletion and reconstruction errors are still reported. The full FFT and complex-field tails are preserved, and tail windows extend to the temporal grid boundaries. For each pulse propagation, the interval is selected using the actual temporal energy at the first gain input, including broadening from preceding optics. It remains fixed for that propagation and is selected again for the next one.
 
-The **optical and gain substeps per Nz cell** controls also support a front-to-tail gain-update limit. Whole-pulse mode uses independent sub-slices, while transient mode shares populations. An explicit update-count limit is not supported with intrapulse relaxation or carrier coupling that retains memory. With N optical steps and a gain limit G, the gain operator is called min(N,G) times, processing all temporal windows internally on each call. O1/G1 means one optical substep and one gain call containing every temporal window per Nz cell, not two half-step gain calls. The explicit limit takes precedence over automatic merging thresholds; accuracy must still be assessed from the diagnostics.
+The **optical and gain substeps per Nz cell** controls also support a front-to-tail gain-update limit. Whole-pulse mode uses independent sub-slices, while transient mode shares populations. An explicit update-count limit is not supported with intrapulse relaxation or carrier coupling that retains memory. With N optical steps and a gain limit G, the gain operator is called min(N,G) times, processing all temporal windows internally on each call. O1/G1 means one optical substep and one gain call containing every temporal window per Nz cell, not two half-step gain calls. The explicit limit takes precedence over automatic merging thresholds. Use the diagnostics to assess whether the chosen limit is accurate enough.
 
 Coherent spectral-tail merging remains limited to whole-pulse axisymmetric gain. Front-to-tail mode uses the full frequency grid. The form can be configured for O1/G1, 99% cumulative energy, and 1+7+1 temporal windows. The separate research development tree includes corresponding synthetic fixtures and import/export regressions in `tests/source_config_fixtures.py` and `tests/test_protected_transient_ui.py`; these development test files are not included in this distribution.
 
-By default, CPA integrates the entire pulse over time and applies local saturation to the total fluence. This is fast but does not distinguish depletion at the front, peak, and tail.
+By default, CPA integrates over the entire pulse and applies local saturation to the total fluence. This is fast, but it does not resolve differences in depletion between the front, peak, and tail.
 
 Enabling `coherent.transient_gain.enabled` performs these steps:
 
@@ -993,17 +993,17 @@ Enabling `coherent.transient_gain.enabled` performs these steps:
 4. Immediately commit the population change caused by that window.
 5. Use the updated populations for subsequent temporal windows.
 
-`adaptive_slices` increases the window count when depletion within one window is too large. The default `reuse_adaptive_slice_floor=true` reuses an already validated lower bound on the window count across z layers during one pulse propagation. This avoids repeatedly failing and retrying from a low count at every local gain step. Depletion is still checked, and acceptance criteria do not change. Inspect the maximum depletion per window and the soft-window energy reconstruction error. Fixed window counts, including one window covering the full pulse support, must also satisfy the depletion gate. Otherwise the configured failure policy applies; finishing a fixed number of windows is not itself an accuracy pass.
+`adaptive_slices` increases the window count when depletion within one window is too large. The default `reuse_adaptive_slice_floor=true` reuses an already validated lower bound on the window count across z layers during one pulse propagation. This avoids starting every local gain step with too few windows and retrying after failure. Depletion is still checked against the same acceptance criteria. Inspect the maximum depletion per window and the soft-window energy reconstruction error. Fixed window counts, including one window covering the full pulse support, must also satisfy the depletion gate. If the depletion gate is not met, the configured failure policy applies even when all fixed windows have been processed.
 
-If CPA fallback is allowed, failure handling first restores the populations to their state before the entire Seed call, then reruns with fluence gain while retaining the coherent field, CPA dispersion, and Kerr effects. Diagnostics distinguish initialization probes from runtime failures using `fallback_origin=initialization|runtime`. Initialization fallback can define a consistent backend for an entire run, and an isolated pulse may also return a runtime-fallback result. A finite pulse train, periodic fixed point, cross-pulse free carriers, or thermal-optical loop cannot mix two backends partway through one state mapping. Runtime fallback cannot count as convergence. If the final closure cannot be completed with one consistent backend, the calculation fails rather than returning a mixed state.
+If CPA fallback is allowed, failure handling first restores the populations to their state before the entire Seed call, then reruns with fluence gain while retaining the coherent field, CPA dispersion, and Kerr effects. Diagnostics distinguish initialization probes from runtime failures using `fallback_origin=initialization|runtime`. Initialization fallback can define a consistent backend for an entire run, and an isolated pulse may also return a runtime-fallback result. A finite pulse train, periodic fixed point, cross-pulse free carriers, or thermal-optical loop cannot mix two backends partway through one state mapping. Runtime fallback cannot count as convergence. If one consistent backend cannot complete the final closure, the calculation fails instead of returning a state assembled from different backends.
 
-The advanced local operator's `multirate_gain.enabled` option keeps fine substeps for dispersion, Kerr, thermal phase, and diffraction while reducing calls to transient soft-window gain. This approximation is off by default. When enabled, both a maximum gain exponent per update and a maximum number of merged substeps limit it. Intrapulse relaxation or strong gain automatically restores updates at every substep. Inspect the actual call reduction in `cpa_diagnostics.local_operator.multirate_gain` and compare convergence against a calculation with this option disabled.
+The advanced local operator's `multirate_gain.enabled` option keeps fine substeps for dispersion, Kerr, thermal phase, and diffraction while reducing calls to transient soft-window gain. This approximation is disabled by default. When enabled, both a maximum gain exponent per update and a maximum number of merged substeps limit it. Intrapulse relaxation or strong gain automatically restores updates at every substep. Check the reduction in gain calls reported by `cpa_diagnostics.local_operator.multirate_gain`, then compare convergence with the option disabled.
 
-Whole-pulse gain also supports `local_operator.spatial_population_update="independent_groups"`. Every spatial gain group starts from the same pre-pulse particle-number density in its parent slice and uses its own axial volume for local saturation and frequency competition. The optical field passes forward, but population depletion is not passed prematurely to the next spatial group. After all groups finish, their results are volume-weighted and committed once at the parent-slice boundary. The thermal field, Pump, and periodic iteration retain the parent grid. Old configurations default to `shared_cell`, preserving the original shared-population behavior within each slice for historical reproducibility. This option supports only the symmetric propagation of `hybrid_whole_fluence` and `axisymmetric_kerr` and cannot be combined with transient gain by temporal windows.
+Whole-pulse gain also supports `local_operator.spatial_population_update="independent_groups"`. Every spatial gain group starts from the same pre-pulse particle-number density in its parent slice and uses its own axial volume for local saturation and frequency competition. The optical field passes to the next spatial group without carrying forward the preceding group's population depletion. After all groups finish, their results are volume-weighted and committed once at the parent-slice boundary. The thermal field, Pump, and periodic iteration retain the parent grid. Old configurations default to `shared_cell` so that historical calculations retain their original shared-population behavior within each slice. This option is available only for symmetric propagation with `hybrid_whole_fluence` or `axisymmetric_kerr`. It cannot be combined with gain updates by temporal window.
 
 `multirate_gain.maximum_updates_per_cell` is an optional **maximum number of gain calls per slice**, distinct from the earlier limit on optical steps merged into each update. With a limit of 2, optical step counts of 1/2/3 produce 1/2/2 gain calls. Three steps form groups of 2+1 with aggregation weights of 2/3 and 1/3. Whole-pulse update-limit mode requires independent spatial groups and the multirate switch; transient mode requires shared populations and the multirate switch. Pure multiphoton absorption with free carriers disabled—including 2PA and 7PA—is allowed, but absorption with a retained carrier history is not. This mode takes precedence over the automatic gain-exponent and group-size thresholds; diagnostics report whether the original gain-exponent threshold was exceeded. Omitting the field or setting it to null retains the original automatic grouping rules. Each group applies gain at its representative middle optical substep, choosing the earlier middle substep for an even-sized group. No extra optical substeps are added.
 
-The optical `maximum_substeps=3` is a hard limit per parent slice. `maximum_nonlinear_phase_rad_per_substep=0.2` is the adaptive threshold for Kerr phase, while gain, dispersion, and thermal phase contribute their own subdivision criteria. If the physical changes require more steps, the program executes no more than 3 and retains the `substep_cap_active` diagnostic. Reaching the limit must not be interpreted as satisfying the accuracy requirement.
+The optical `maximum_substeps=3` is a hard limit per parent slice. `maximum_nonlinear_phase_rad_per_substep=0.2` is the adaptive threshold for Kerr phase, while gain, dispersion, and thermal phase contribute their own subdivision criteria. If the physical changes require more steps, the program executes no more than 3 and retains the `substep_cap_active` diagnostic. Reaching this limit does not establish that the accuracy requirement has been met.
 
 ### 9.12 Independent Seed optical path and radius probes
 
@@ -1012,11 +1012,11 @@ Radius probes accept accumulated optical-path positions referenced to either:
 - This beam's LASER source plane as zero.
 - The shared crystal entrance as zero.
 
-They return x/y D4σ radii, centroids, upper/lower envelopes, and actual coordinates. Pump and Seed use their own source-to-crystal distances and offsets; the two are not mixed.
+The probes return x/y D4σ radii, centroids, upper/lower envelopes, and actual coordinates. Pump and Seed use their own source-to-crystal distances and offsets; the two are not mixed.
 
 The **optical-path preview** at the top of the interface is a cold-state q-parameter preview before calculation. It applies the configured static material refractive index and sequential optical elements, but not the unsolved temperature field, thermal-optical `Δn`, gain guiding, or FFT aperture reshaping. After a calculation, the result's **3D optical-path workbench** displays both: thin solid lines/translucent beam volumes show the cold preview, and thick dashed lines/open circles/elliptical rings show the actual propagated D4σ. The 3D view is displayed first and can be rotated by dragging. The 2D envelope, pass energies, and recorded optical planes remain in the same result workspace. Inside the crystal, transverse second moments are automatically calculated for every optical z bin; only scalar diagnostics are added, without copying every complex-field slice. Pump values are cell-averaged intensities plotted at bin centers; Seed values are fluences after completing that bin's split step, plotted at bin exits. Separate entrance/exit markers retain the exact boundary planes. Disabling optical-plane recording still retains internal z-bin diagnostics, but does not save additional optical-plane markers such as source planes, boundary planes, and system output.
 
-When Pump and Seed overlap, the selected beam is drawn last so that the Seed is not hidden by the translucent Pump surface. This affects drawing order only, not propagation physics.
+When Pump and Seed overlap, the selected beam is drawn last so that the Seed is not hidden by the translucent Pump surface. Only the drawing order changes; propagation is unaffected.
 
 ---
 
@@ -1026,7 +1026,7 @@ When Pump and Seed overlap, the selected beam is drawn last so that the Seed is 
 
 ### 10.1 Unified multipass configuration
 
-All new multipass setups use `simulation.multipass`. Separate configurations for fast multipass, counterpropagating double-pass, and custom benches are no longer maintained in parallel. The main fields are:
+All new multipass setups use `simulation.multipass`. Fast multipass, counterpropagating double-pass, and custom benches now use this same configuration. The main fields are:
 
 - `enabled`: enables multipass; otherwise the calculation is single-pass.
 - `template`: `double_pass`, `two_mirror`, `herriott`, `relay_4f`, or `prescribed`.
@@ -1036,7 +1036,7 @@ All new multipass setups use `simulation.multipass`. Separate configurations for
 - `per_transition_extra_delay_s`: a common extra delay beyond each geometrical route.
 - `maximum_time_bins`, `include_dark_relaxation`, and `maximum_dark_step_s`: budgets for the causal clock and dark evolution.
 
-Every template compiles to the same `hits` and `transitions` plan. `causal` advances all active passes on a global clock. `sequential` completes the same plan pass by pass, allowing backends such as `fluence` and `commercial_app_fast` to reuse hit directions, interpass elements, losses, and delays without a separate multipass system. New interface setups use only the unified templates. Imported legacy fast-multipass configurations are shown in their migrated sequential form; the old entry points are not restored.
+All templates compile into a common plan of `hits` and `transitions`. `causal` advances all active passes on a global clock. `sequential` completes the same plan pass by pass, allowing backends such as `fluence` and `commercial_app_fast` to reuse hit directions, interpass elements, losses, and delays without a separate multipass system. New interface setups use only the unified templates. Imported legacy fast-multipass configurations are shown in their migrated sequential form; the old entry points are not restored.
 
 `optical_train.seed` describes only the common input path up to the first crystal hit and the common output path after the last hit. Propagation between hits belongs to the chosen template or `prescribed.transitions` and must not also be duplicated in a global interpass optical train.
 
@@ -1067,7 +1067,7 @@ Five template types are provided:
 
 `extra_delay_s` represents delays not already included in the geometrical route. If the actual route changes the beam, `delay_only` cannot substitute for propagation.
 
-Causal execution requires at least `signal_model="spectral_time"` and `seed.temporal.resolved=true`. The hit count is checked jointly against `simulation.multipass.pass_count` and the template; a second `simulation.passes` value is no longer required. The current model treats the finite multipass evolution of one injected pulse. It does not treat separately injected neighboring pulses simultaneously remaining in the system, a coherently leaking cavity, or Maxwell–Bloch dynamics. Every pass shares one z-CFL clock. A relative spread in pass `cosθ` values above `maximum_relative_path_cosine_span` causes rejection rather than a silent approximation.
+Causal execution requires at least `signal_model="spectral_time"` and `seed.temporal.resolved=true`. The program checks the hit count against both `simulation.multipass.pass_count` and the template, so no second `simulation.passes` value is required. The current model treats the finite multipass evolution of one injected pulse. It does not treat separately injected neighboring pulses simultaneously remaining in the system, a coherently leaking cavity, or Maxwell–Bloch dynamics. Every pass shares one z-CFL clock. A relative spread in pass `cosθ` values above `maximum_relative_path_cosine_span` causes rejection rather than a silent approximation.
 
 Geometrical group path and extra delay are each counted once. If a sequential backend already advances populations within the pulse, interpass dark relaxation subtracts the pulse-clock interval already advanced, avoiding duplicate recovery. Whether the intrapulse clock advances depends on the backend actually executed.
 
@@ -1088,7 +1088,7 @@ When loading legacy JSON, the program performs one deterministic migration befor
 | `pass_mode="optical_bench"` | Multiple `gain_medium` entries split into prescribed hits/transitions |
 | Fast multipass with `passes>1` | An internal sequential template preserving direction, x flips, transmission, delays, and interpass elements |
 
-These mappings exist only for reading old files. There are no legacy counterpropagating double-pass or `optical_bench` solver branches at runtime, and the interface does not create legacy fields. After import, inspect the effective model and optical-path preview, then download the new JSON as the baseline for later work. If a file enables both old and new multipass definitions, it is rejected rather than assigned a guessed precedence.
+These mappings are used only when reading old files. There are no legacy counterpropagating double-pass or `optical_bench` solver branches at runtime, and the interface does not create legacy fields. After import, inspect the effective model and optical-path preview, then download the new JSON as the baseline for later work. A file that enables both old and new multipass definitions is rejected; neither definition is given an assumed precedence.
 
 ### 10.4 Optical elements
 
@@ -1109,7 +1109,7 @@ These mappings exist only for reading old files. There are no legacy counterprop
 | `observation` | Name | Saves a diagnostic plane |
 | `gain_medium` | Direction, angles, interfaces | Defines one crystal hit |
 
-Before propagation, formal JSON input rejects incomplete built-in elements: for example, `free_space` without `length_m`, `thin_lens` without a nonzero focal length, `thick_lens` without index/thickness, `interface` without `n_after`, `loss` without transmission, or a dispersion placeholder that is not an object. Table placeholders therefore do not silently become inactive elements.
+Before propagation, formal JSON input rejects incomplete built-in elements: for example, `free_space` without `length_m`, `thin_lens` without a nonzero focal length, `thick_lens` without index/thickness, `interface` without `n_after`, `loss` without transmission, or a dispersion placeholder that is not an object. Incomplete table entries therefore cannot silently become inactive elements.
 
 Known optional numeric fields set to JSON `null` are interpreted as unset during configuration normalization instead of reaching ABCD, FFT, random-ray, or preview code as `float(None)`. `phase_screen.power_transmission` is applied as power transmission in ABCD, FFT, and random Pump-ray paths. Mirror flips update the centroid, angles, and ellipse rotation together, avoiding inconsistent orientations of noncircular beams between backends.
 
@@ -1137,7 +1137,7 @@ Wavelength-resolved calculations interpolate the response at each wavelength. `o
 
 ### 10.6 Current limits of the optical bench
 
-This is sequential paraxial propagation, not nonsequential CAD ray tracing. It does not automatically detect mount collisions, large-angle mechanical obstruction, ghosts, multiple reflection branches, or actual three-dimensional mirror placement.
+This is sequential paraxial propagation, not nonsequential CAD ray tracing. It does not automatically check for mount collisions, large-angle mechanical obstruction, ghosts, multiple reflection branches, or actual three-dimensional mirror placement.
 
 A folded layout is unfolded along accumulated optical path, describing the order in which the field encounters components; it is not the experimental bench's global XYZ CAD geometry.
 
@@ -1164,7 +1164,7 @@ $$
 Q=\eta_{active}Q_{active}+Q_{passive}+Q_{ASE,passive}+Q_{Seed,enabled}.
 $$
 
-Active Pump absorption is converted to heat using the quantum-defect model or an explicit fraction; passive Pump absorption becomes heat in full. Unabsorbed Pump, aperture losses, and lateral escape are not included in the crystal heat source. This avoids applying one common fraction to active absorption, passive absorption, and optical-path losses.
+Active Pump absorption is converted to heat using the quantum-defect model or an explicit fraction; passive Pump absorption becomes heat in full. Unabsorbed Pump, aperture losses, and lateral escape are not included in the crystal heat source. The separate terms keep active absorption, passive absorption, and optical-path losses from being assigned one common heat fraction.
 
 For custom level systems or transition-by-transition closure, use `event_energy_ledger`. If the Pump-transition energy difference in custom `level_energies_J` disagrees with the Pump photon energy, the component ledger is marked inapplicable. Select the event ledger and declare the complete energy partition instead.
 
@@ -1261,7 +1261,7 @@ Stress modes are:
 - `thermoelastic_fem`: three-dimensional isotropic, small-strain thermoelastic finite elements, off by default. Each active thermal cell corresponds to an eight-node hexahedral element. The solver satisfies `∇·σ=0` and returns three displacement components, six stress and strain components, von Mises stress, the axial displacement range, and a discrete force-equilibrium residual. External surfaces are traction-free by default. `thermoelastic_fem.fixed_faces` can fully fix all three displacement components on selected crystal faces.
 - `anisotropic_thermoelastic_fem`: uses a 6×6 elastic-stiffness matrix, six-component thermal expansion, and material-to-laboratory orientation, rotates them, and solves the same three-dimensional force equilibrium. With `photoelastic_coupling="tensor_photoelastic"`, it also computes `ΔB=p:ε`, constructs a transverse refractive-index tensor, and directly drives the monochromatic Jones field.
 
-Anisotropic inputs consistently use Voigt ordering `xx, yy, zz, xy, yz, xz`. Shear components of stress and impermeability are tensor components; strain shear inputs are engineering shear, `2εxy,2εyz,2εxz`. Orientation can be supplied as an orthogonal 3×3 material-to-laboratory rotation matrix or Euler xyz angles, composed as `Rz·Ry·Rx`. The machine-readable declaration must be `voigt_shear_convention="engineering_strain_tensor_stress"`. Convert other database conventions before use.
+Anisotropic inputs consistently use Voigt ordering `xx, yy, zz, xy, yz, xz`. Shear components of stress and impermeability are tensor components; strain shear inputs are engineering shear, `2εxy,2εyz,2εxz`. Orientation can be supplied as an orthogonal 3×3 material-to-laboratory rotation matrix or Euler xyz angles, composed as `Rz·Ry·Rx`. Set the machine-readable declaration to `voigt_shear_convention="engineering_strain_tensor_stress"`. Convert data from other database conventions before use.
 
 `thermoelastic_fem.maximum_active_elements` is an explicit computation budget. Exceeding it raises an error rather than silently coarsening stress hotspots. For fine optical resolution, retain a coarser physical/mechanical grid and enable an independent optical grid. FEM `photoelastic_coupling` defaults to `off` so that coefficients left in an old configuration do not automatically change the optics. Isotropic FEM can explicitly select `scalar_von_mises_proxy`; anisotropic FEM can explicitly select `tensor_photoelastic`. `endface_deformation.model="distributed_opd"` retains the separate front/rear FEM surface sags and applies boundary phase according to wavelength, propagation direction, and Pump/Seed role. It no longer folds the sag difference into the volume `delta_n`. This closure still does not resolve refraction by the deformed surface's local normal. Contacts, coatings/solder, heat sinks, and fracture statistics require dedicated models and experimental strength data.
 
@@ -1269,9 +1269,9 @@ If only the radial/tangential plane-stress approximation for an end-pumped rod i
 
 ### 11.6 Parabolic-fit diagnostics for three-dimensional fields
 
-This diagnostic is off by default. When enabled, it fits area-weighted quadratic forms to the three-dimensional `Δn(x,y,z)` and gain fields at selected z slices, reporting x/y and principal-axis equivalent focal lengths, fitting radii, orientation, and normalized RMSE. The fitting region can be the automatically selected active-material region, a manually specified region, or radii scaled from the Seed radius at the crystal entrance.
+This diagnostic is off by default. When enabled, it fits area-weighted quadratic forms to the three-dimensional `Δn(x,y,z)` and gain fields at selected z slices, reporting x/y and principal-axis equivalent focal lengths, fitting radii, orientation, and normalized RMSE. Select the fitting region automatically from the active material, specify it manually, or scale its radii from the Seed radius at the crystal entrance.
 
-The module only compresses the current FVM/FFT result into an interpretable paraxial-curvature diagnostic. It is **not** applied to the field as an additional ABCD thermal lens. Because three-dimensional `Δn` already enters FFT/BPM layer by layer, propagating through the same parabolic fit again would double count the thermal lens. Large RMSE means the field is not well represented by a parabola; use the full three-dimensional result in that case.
+The module only compresses the current FVM/FFT result into an interpretable paraxial-curvature diagnostic. The fitted lens is **not** applied to the field as an additional ABCD element. Because three-dimensional `Δn` already enters FFT/BPM layer by layer, propagating through the same parabolic fit again would double count the thermal lens. Large RMSE means the field is not well represented by a parabola; use the full three-dimensional result in that case.
 
 ### 11.7 Local temperature/doping-dependent spectroscopic feedback
 
@@ -1291,7 +1291,7 @@ $$
 \tau(N)=\tau_{ref}\frac{1+(N_{ref}/N_q)^m}{1+(N/N_q)^m}.
 $$
 
-The default `range_policy="record"` clamps to endpoints outside the table and records the excursion in provenance and validity reports. `range_policy="error"` rejects it before propagation. The program does not generate unspecified material coefficients or describe endpoint clamping as an extrapolation model.
+The default `range_policy="record"` clamps to endpoints outside the table and records the excursion in provenance and validity reports. `range_policy="error"` rejects it before propagation. The program does not supply missing material coefficients, and endpoint clamping is not an extrapolation model.
 
 Materials with only `σ(T)` rather than a two-dimensional `σ(T,λ)` table are still evaluated at the selected operating temperature. Negative cross sections are rejected when applying material spectral data. Original negative values may be retained for inspecting the material record, but are not silently clipped to zero for propagation. Cross-section curves on the results page represent the **configured operating temperature**, not the full solved local three-dimensional temperature field. Preview points outside strict limits show gaps and a notice rather than a fabricated extension.
 
@@ -1337,7 +1337,7 @@ $$
 \frac{dI}{ds}=-\beta_K I^K.
 $$
 
-Here `s` is the actual beam path inside the crystal and `I` is intensity in a cross section perpendicular to that beam. At oblique incidence, crystal-face projected intensity or axial `dz` cannot be substituted directly. Every path step is integrated analytically, preserving positive intensity even under strong loss. The units of `beta_SI` depend on K, and its value must come from data for the relevant material, sample, wavelength, and pulse duration. For K>1 the analytic solution is `Iout=Iin/[1+(K−1)βK Iin^(K−1) ds]^(1/(K−1))`. Adaptive subdivision estimates loss using this nonlinear relation. For high-order KPA, simply dividing the whole-cell loss fraction between substeps is incorrect. A step-count limit is only a budget, not a guarantee of accuracy.
+Here `s` is the actual beam path inside the crystal and `I` is intensity in a cross section perpendicular to that beam. At oblique incidence, crystal-face projected intensity or axial `dz` cannot be substituted directly. Every path step is integrated analytically, preserving positive intensity even under strong loss. The units of `beta_SI` depend on K, and its value must come from data for the relevant material, sample, wavelength, and pulse duration. For K>1 the analytic solution is `Iout=Iin/[1+(K−1)βK Iin^(K−1) ds]^(1/(K−1))`. Adaptive subdivision estimates loss using this nonlinear relation. For high-order KPA, simply dividing the whole-cell loss fraction between substeps is incorrect. A step-count limit controls computation cost; it does not guarantee accuracy.
 
 Carrier density follows `dN/dt=G−N/τ`. FCA/refraction uses the average density within a bin rather than only its endpoint. Starting with zero carriers and `dt≪τ`, the mean density tends to `G dt/2`. This is the stable analytic limit; it does not include undeclared carrier diffusion, energy transport, or coherent multimode statistics. The current incoherent-HG nonlinear closure uses the summed intensity. If the experiment exhibits rapid random interference, `⟨I^K⟩` need not equal `⟨I⟩^K`, and a separate statistical model is required.
 
@@ -1381,7 +1381,7 @@ Independent refinement centers change only the distribution of physical cells in
 
 Integration, thermal finite volumes, and thermoelastic FEM on nonuniform grids use actual cell boundaries. A nonuniform grid cannot directly support a standard FFT, so enable an independent uniform optical grid or use a reduced combination that does not require FFT.
 
-Each main-grid axis requires at least 3 cells. The form does not clip valid imported grids to fixed display limits such as 256/300, and Pump temporal sampling is not capped at 500. Actual calculations remain subject to memory, FEM element budgets, and each model's sampling requirements.
+Each main-grid axis requires at least 3 cells. The form does not clip valid imported grids to fixed display limits such as 256/300, and Pump temporal sampling is not capped at 500. Memory, FEM element budgets, and each model's sampling requirements still limit the calculation.
 
 ### 12.3 Independent optical grids
 
@@ -1417,7 +1417,7 @@ Nz affects Pump depletion, Seed split-step propagation, axial heat-source distri
 
 ## 13. Parameter sweeps
 
-Parameter sweeps answer how outputs change when an input is varied; they do not use a separate physical solver. Every sample copies the full current configuration, changes only the swept field, and reruns the same `AmplifierSimulator`. Supported optical inputs can inherit the preceding point's state as an initial guess.
+Parameter sweeps answer how outputs change when an input is varied; they do not use a separate physical solver. At each sample, the program copies the full current configuration, changes only the swept field, and reruns the same `AmplifierSimulator`. Supported optical inputs can inherit the preceding point's state as an initial guess.
 
 ### 13.1 Inputs available for direct sweeps
 
@@ -1444,11 +1444,11 @@ Select linear or logarithmic sampling, start, end, and point count. Logarithmic 
 
 Automatic warm starts are supported for Pump power, individual x/y waist radii and common scaling of Pump/Seed, LASER-to-first-element distances, and preceding-element-to-first-GAIN distances. The first point uses the configured initialization or a user-selected archived initial state. Later points inherit populations, temperature, and thermal-optical state from the most recent converged point. Every point still propagates again and executes the original convergence checks; old output is not reused.
 
-When both 2D axes are supported, automatic serial execution follows a serpentine order: the first row runs left to right, the second right to left, and so on. Each new row inherits its neighboring state rather than jumping from one end of the range to the other. Plots and archives retain the original X/Y coordinates. Every point's parameters are generated from the sweep baseline; waist scaling is not multiplied cumulatively between points.
+When both 2D axes are supported, automatic serial execution follows a serpentine order: the first row runs left to right, the second right to left, and so on. Starting each new row from its neighboring state avoids a jump across the entire parameter range. Plots and archives retain the original X/Y coordinates. Every point's parameters are generated from the sweep baseline; waist scaling is not multiplied cumulatively between points.
 
-Failed or explicitly unconverged points do not export a new continuation state. A previous usable state is retained if available. Incompatible state shapes or values are recorded, and the calculation falls back to configured initialization. `continuation` records whether a state was inherited, its source point, and any fallback reason. The old `pump_continuation` field remains as a compatibility alias. Overall validation warnings are distinct from numerical convergence, and the original warnings remain intact.
+Failed or explicitly unconverged points do not export a new continuation state. A previous usable state is retained if available. Incompatible state shapes or values are recorded, and the calculation falls back to configured initialization. `continuation` records whether a state was inherited, its source point, and any fallback reason. The old `pump_continuation` field remains as a compatibility alias. Numerical convergence and overall validation are assessed separately; all original warnings are retained.
 
-Two-dimensional combinations containing unsupported parameters, such as crystal dimensions or material properties, still initialize every point independently and can run in parallel. Lightweight `run_compact_parameter_*` screening interfaces also retain independent-point calculations. A warm start may continue along one stable branch. For multistability or hysteresis, compare reverse scans or independent initial conditions; faster convergence does not establish uniqueness.
+Two-dimensional combinations containing unsupported parameters, such as crystal dimensions or material properties, still initialize every point independently and can run in parallel. Lightweight `run_compact_parameter_*` screening interfaces also retain independent-point calculations. Warm starts may follow one stable solution branch. For multistability or hysteresis, compare reverse scans or independent initial conditions; faster convergence does not establish uniqueness.
 
 ### 13.2 Outputs available for plotting
 
@@ -1464,7 +1464,7 @@ An output that flattens or falls as Pump power increases can arise from gain sat
 
 ### 13.4 Monte Carlo uncertainty and experimental calibration
 
-An ordinary sweep shows trends over a prescribed grid; the uncertainty workflow propagates batch variation and measurement uncertainty. A study file can assign a `normal`, `lognormal`, `uniform`, or `triangular` distribution to each configuration path and describe correlations with a correlation matrix.
+Use an ordinary sweep to examine trends over a prescribed grid and the uncertainty workflow to propagate batch variation and measurement uncertainty. A study file can assign a `normal`, `lognormal`, `uniform`, or `triangular` distribution to each configuration path and describe correlations with a correlation matrix.
 
 After installing the package and activating its environment, an illustrative command using the bundled baseline is:
 
@@ -1486,7 +1486,7 @@ amplifier-sim calibrate configs/example.json calibration-study.json -o output/ca
 
 Outputs include the best parameters, standardized residuals, χ², all evaluation records, and the local Jacobian-based parameter covariance. Covariance is obtained from the Jacobian's SVD. If the Jacobian is rank deficient, covariance is `null` rather than a zero variance that falsely suggests the parameters are determined. The default study setting `residual_variance_mode="known_absolute"` uses the known measurement/model-error variances without multiplying by reduced χ². Only `estimated_from_residuals` estimates an additional scale from residuals; insufficient degrees of freedom make covariance unavailable. Inspect `parameter_covariance_status`, `parameter_jacobian_rank`, and the actual `executed_signal_model`.
 
-Optimization and final reevaluation must use the same executed Seed backend. A fallback that changes the backend causes rejection of further fitting. This is not a complete Bayesian posterior. For multimodality, strong nonlinearity, or structural model error, use additional MCMC/surrogate-model cross-checks.
+Optimization and final reevaluation must use the same executed Seed backend. A fallback that changes the backend causes rejection of further fitting. The fit does not provide a complete Bayesian posterior. For multimodality, strong nonlinearity, or structural model error, use additional MCMC/surrogate-model cross-checks.
 
 ---
 
@@ -1506,11 +1506,11 @@ Check the following in order:
 6. Whether the effective model matches the interface selection.
 7. Whether the steady-state method, repetition rate, and Pump period are consistent.
 
-After running, the interface retains the resolved configuration and `SimulationResult` for that calculation. Editing the form does not automatically recalculate an old result. Interpret the result using the configuration stored with that run.
+The interface saves the resolved configuration and `SimulationResult` for each calculation. Later edits to the form do not recalculate that result, so interpret it using its saved configuration.
 
 ### 14.2 Overview metrics
 
-The interface first highlights the final system output energy per pulse. If the repetition rate is positive, it also calculates
+The overview highlights the final system output energy per pulse. If the repetition rate is positive, it also calculates
 
 $$
 P_{out,avg}=E_{out,pulse}f_{rep}.
@@ -1551,7 +1551,7 @@ In minimum/mean/maximum statistics for three-dimensional fields, means are weigh
 
 ### 14.5 Spectral and temporal results
 
-Wavelength-resolved and coherent modes display input/output spectra, gain narrowing, input/output temporal waveforms, spectral phase, and compressed temporal power. A `spectral_time` temporal curve represents ordered energy bins; a `coherent_cpa` temporal curve is transformed from the complex spectrum under `exp(−iωt)`. Their physical meanings differ.
+Wavelength-resolved and coherent modes display input/output spectra, gain narrowing, input/output temporal waveforms, spectral phase, and compressed temporal power. A `spectral_time` temporal curve represents ordered energy bins; a `coherent_cpa` temporal curve is transformed from the complex spectrum under `exp(−iωt)`. The two curves therefore require different physical interpretations.
 
 Two-dimensional optical-plane color scales use actual fluence in `J/m²` or power density in `W/m²`. Only profiles explicitly labeled normalized are relative values. Time displays in ps and fs are converted separately; they must not share one conversion factor.
 
@@ -1571,7 +1571,7 @@ The diagnostics page collects:
 - ASE thresholds, strong-field losses, and B-integral.
 - Runtime architecture, FFT backend, and warnings.
 
-Warnings are substantive. Resolve energy nonconservation, window clipping, nonconvergence, parameter-range excursions, or automatic model reduction before drawing quantitative conclusions.
+Before drawing quantitative conclusions, resolve warnings about energy nonconservation, window clipping, nonconvergence, parameter-range excursions, or automatic model reduction.
 
 ---
 
@@ -1587,7 +1587,7 @@ The program distinguishes three timescales:
 2. Temporal/frequency sampling inside one Seed pulse.
 3. Population convergence over repeated Pump+Seed periods.
 
-These do not substitute for one another.
+Each requires its own sampling or convergence check.
 
 ### 15.2 Samples per period with a CW Pump
 
@@ -1603,11 +1603,11 @@ For CW pumping and smoothly varying rate equations, relatively few samples are o
 
 The final `pulse_map` output is one representative Seed pulse from the converged period. Average output remains this pulse energy multiplied by repetition rate.
 
-Pump/population time samples per period form the rate-equation temporal grid, dividing one repetition period into population-advancement intervals. For a CW Pump, adding samples only reduces the population time step; it does not create additional Pump pulses. The thermal transient's FEA time-step count belongs to the temperature equation. The two grids are different and generally need not have equal counts.
+Pump/population time samples per period form the rate-equation temporal grid, dividing one repetition period into population-advancement intervals. For a CW Pump, adding samples only reduces the population time step; it does not create additional Pump pulses. The thermal transient's FEA time-step count belongs to the temperature equation. The two grids serve different equations and generally need not use equal step counts.
 
 ### 15.4 Convergence criteria
 
-The periodic fixed point checks both relative population and output residuals. If coherent cross-pulse free carriers are enabled, the selected combination of FCA optical depth/carrier phase/absorbed energy, or the full carrier-density field, provides a third stopping condition. A minimum iteration count prevents accidental early stopping, and a maximum prevents unlimited execution. If any gate remains above tolerance, even a generated result must be treated as an unconverged approximation.
+The periodic fixed point checks both relative population and output residuals. If coherent cross-pulse free carriers are enabled, the selected combination of FCA optical depth/carrier phase/absorbed energy, or the full carrier-density field, provides a third stopping condition. The minimum iteration count guards against accidental early stopping; the maximum prevents the iteration from continuing indefinitely. If any gate remains above tolerance, even a generated result must be treated as an unconverged approximation.
 
 ---
 
@@ -1615,7 +1615,7 @@ The periodic fixed point checks both relative population and output residuals. I
 
 ## 16. Command Line, Batch Processing, and Reproducible Runs
 
-The web interface is convenient for adjusting parameters. The command line is useful for batch processing, version control, and saving results for formal analysis. The commands below assume that the environment installed in Section 2 is active and that the current directory is the extracted project folder.
+Use the web interface to adjust parameters and the command line for batch processing, version control, and saving results for formal analysis. Before running the commands below, activate the environment installed in Section 2 and open a terminal in the extracted project folder.
 
 ### 16.1 Validate and Inspect the Merged Configuration
 
@@ -1623,7 +1623,7 @@ The web interface is convenient for adjusting parameters. The command line is us
 amplifier-sim validate configs/example.json
 ```
 
-This command reads the JSON, merges it recursively with the defaults, performs physical and field-level checks, and prints the complete configuration that will actually be passed to the solver. Inspect this output first when investigating a discrepancy between values shown in the interface and those used in a calculation.
+This command reads the JSON, merges it recursively with the defaults, checks the fields and physical settings, and prints the complete configuration passed to the solver. If values in the interface differ from those used in a calculation, inspect this output first.
 
 ### 16.2 Run and Save Results
 
@@ -1631,7 +1631,7 @@ This command reads the JSON, merges it recursively with the defaults, performs p
 amplifier-sim run configs/example.json -o output/example
 ```
 
-You can also invoke the installed package without relying on the command-line executable:
+Alternatively, run the installed package directly:
 
 ```bash
 python -m amplifier_sim run configs/example.json -o output/example
@@ -1643,11 +1643,11 @@ python -m amplifier_sim run configs/example.json -o output/example
 amplifier-sim models
 ```
 
-The output lists names for energy-level models, presets, Signal/JOSA models, temporal and spectral profiles, common optical elements, beams, and stress plugins. It is a categorized index, not a complete field schema. For example, the specialized `double_pass_lens_relay` element is described in Section 10.4 and checked by the configuration validator.
+The output groups the available energy-level models, presets, Signal/JOSA models, temporal and spectral profiles, common optical elements, beams, and stress plugins. It lists their names rather than every configuration field. The specialized `double_pass_lens_relay` element, for example, is described in Section 10.4 and checked by the configuration validator.
 
 ### 16.4 Embed External Material Data
 
-Supply your own supported material-library file. The name `supplied-material-library.json` below is a placeholder for that file; a separate material library is not included in this distribution.
+This command requires a material-library file in a supported format. Replace `supplied-material-library.json` with your own file; a separate material library is not included in this distribution.
 
 ```bash
 amplifier-sim materialize configs/example.json supplied-material-library.json \
@@ -1655,7 +1655,7 @@ amplifier-sim materialize configs/example.json supplied-material-library.json \
   --polarization x --snapshot-out-of-range edge -o configs/crzns_materialized.json
 ```
 
-Replace the material name and operating point with those appropriate to your library and sample. The output embeds the operating-point cross sections, full response data, and source SHA-256, making it suitable for research or experimental records.
+Choose the material name and operating point for your library and sample. The output embeds the operating-point cross sections, full response data, and source SHA-256 so that they can be kept with research or experimental records.
 
 ### 16.5 Convergence Studies
 
@@ -1666,15 +1666,15 @@ amplifier-sim convergence configs/example.json \
   -o output/example_convergence.json
 ```
 
-Each axis is refined independently from the same baseline configuration. Axes that do not apply are recorded as skipped. Refining the physical Nx/Ny or `fem_mesh` also increases `refined_region.nx/ny`, while preserving the core size and computational-box boundaries. This prevents refinement from adding only peripheral cells and missing the beam core. Separate axes cover time and spectral sampling, the independent Pump window, coherent soft windows, ASE spectrum and directions, and ray count. Run `amplifier-sim convergence --help` for the complete list. Automatic certification requires at least three valid, distinct discretizations, with both of the last two adjacent-level changes below the default tolerance of `0.01`. Two levels, sampling counts that become identical after rounding, or runs with no actual refinement cannot be certified. This is not a global error bound relative to the continuous exact solution.
+Each axis is refined separately from the same baseline configuration, and inapplicable axes are recorded as skipped. Refining the physical Nx/Ny or `fem_mesh` also increases `refined_region.nx/ny`, while preserving the core size and computational-box boundaries. The refinement therefore covers the beam core as well as the surrounding cells. Separate axes cover time and spectral sampling, the independent Pump window, coherent soft windows, ASE spectrum and directions, and ray count. Run `amplifier-sim convergence --help` for the complete list. Automatic certification requires at least three valid, distinct discretizations, with both of the last two adjacent-level changes below the default tolerance of `0.01`. Certification is unavailable with only two levels, sampling counts that become identical after rounding, or no actual refinement. Even a certified study does not provide a global error bound relative to the continuous exact solution.
 
-The report determines comparability from the backend actually used and the actual discretization. Failed or invalid runs, invalid target metrics, or backend changes cannot be certified as converged; the corresponding `converged` is `null`, with a reason. Only the evaluated axes and metrics have passed; skipped items remain unverified. The CLI returns `3` when `all_assessed_axes_converged` is false. This overall flag treats `sensitivity_complete` for the random-seed axis as completion of a sensitivity check, rather than certification that random error has vanished. Inspect each axis's `interpretation` and status as well.
+The report compares runs using their effective backend and discretization. Failed or invalid runs, invalid target metrics, or backend changes cannot be certified as converged; the corresponding `converged` is `null`, with a reason. A pass applies only to the evaluated axes and metrics; skipped items remain unverified. The CLI returns `3` when `all_assessed_axes_converged` is false. This overall flag treats `sensitivity_complete` for the random-seed axis as completion of a sensitivity check, rather than certification that random error has vanished. Inspect each axis's `interpretation` and status as well.
 
 `pump_ray_seed_sensitivity` measures sensitivity to random seeds and must not be interpreted as grid convergence. `pump_ray_count` also runs three different seeds at each level. The 95% interval for the mean of repeated samples uses Student's t distribution with N−1 degrees of freedom, assuming independent repetitions with approximately normally distributed results. With only one sample, the standard deviation, standard error, and interval are all `null`; without SciPy, the interval is unavailable. The interval does not include discretization bias, material uncertainty, or model error. For the seed-sensitivity axis, `--factors` generates different seeds according to the implementation. Choose multiple distinct repetitions and inspect the actual seeds recorded in the report.
 
 ### 16.6 Uncertainty and Calibration Commands
 
-Section 13.4 describes the study-file formats and statistical definitions for `uncertainty` and `calibrate`. `uncertainty` returns `4` when there are no valid samples. `calibrate` returns `5` when optimization terminates normally without succeeding. Configuration errors, missing required dependencies, or a backend change during calibration raise an error. Writing a JSON file alone is not evidence of success.
+Section 13.4 describes the study-file formats and statistical definitions for `uncertainty` and `calibrate`. `uncertainty` returns `4` when there are no valid samples. `calibrate` returns `5` when optimization terminates normally without succeeding. Configuration errors, missing required dependencies, and backend changes during calibration raise errors. Check the reported status rather than assuming that a written JSON file means the calculation succeeded.
 
 ### 16.7 Published Benchmarks
 
@@ -1683,7 +1683,7 @@ amplifier-sim benchmark
 amplifier-sim benchmark sridharan_2007_ybyag
 ```
 
-The first command lists benchmarks; the second runs the specified source-traceable benchmark and reports whether it passes its tolerance. This example checks FN numerical values for a published design prediction. It does not execute the current Setup's full three-dimensional coupled calculation and does not demonstrate agreement with measured output. Read `claim_type` and `evidence_note` in the output.
+The first command lists benchmarks. The second runs the named benchmark, whose source is documented, and checks its result against the specified tolerance. This example evaluates FN numerical values from a published design prediction. It neither runs the current Setup's full three-dimensional coupled calculation nor establishes agreement with measured output. The output fields `claim_type` and `evidence_note` describe what the benchmark supports.
 
 ---
 
@@ -1693,9 +1693,9 @@ The first command lists benchmarks; the second runs the specified source-traceab
 
 ### 17.1 Merge Rules
 
-JSON is the public configuration format. A file may contain only the fields you want to override; loading merges them recursively with `DEFAULTS`. The default policy rejects unknown keys in core namespaces and preserves extension fields only in `extras` and the top-level `plugins` namespace. To support older plugins, explicitly choose `schema_policy="permissive"`. Arrays are generally replaced as a whole rather than merged element by element.
+Configurations use JSON. You can specify only the fields to override; the loader merges them recursively with `DEFAULTS`. The default policy rejects unknown keys in core namespaces and preserves extension fields only in `extras` and the top-level `plugins` namespace. To support older plugins, explicitly choose `schema_policy="permissive"`. Arrays are generally replaced as a whole rather than merged element by element.
 
-After a Setup JSON is uploaded, parsed values populate the form. Fields subsequently edited in the form become part of the current configuration. For formal reproduction, download or save the final complete configuration rather than retaining only the initially uploaded file.
+Uploading a Setup JSON fills the form with its parsed values. Any later form edits become part of the current configuration. To reproduce a run, save or download the final complete configuration; the original upload alone will not include later form edits.
 
 ### 17.2 Top-level Groups
 
@@ -1718,7 +1718,7 @@ The default is `schema_policy="strict_core_with_plugin_extras"`. Unknown fields 
 
 ### 17.3 A Readable Minimal Starting Point
 
-The example below demonstrates structure, not quantitative data for a particular material. Omitted fields are filled from defaults:
+The example below illustrates the configuration structure. Its values do not describe a particular material, and omitted fields are filled from defaults:
 
 ```json
 {
@@ -1775,7 +1775,7 @@ Core JSON values use SI throughout: m, s, Hz, W, J, K, m⁻³, m², and m⁻¹. 
 
 ### 17.5 Configuration Sources and Overrides
 
-After material import, `material.library` and `setup_provenance` track the source. You may subsequently change ion density, cross sections, or lifetimes manually, but the summary identifies this as a user override. The resulting setup can no longer be described as an unmodified reproduction of the material library.
+After material import, `material.library` and `setup_provenance` track the source. If you later change ion density, cross sections, or lifetimes manually, the summary records a user override. The setup then differs from the material-library record.
 
 ---
 
@@ -1794,7 +1794,7 @@ Configuration/material → 3D doping → Pump/population operating point
                        → Final reported Seed propagation and extraction → Results
 ```
 
-The final Seed calculation uses the solved thermal field and any enabled photoelastic or end-face phase. Whether the backend applies the complete spatial phase depends on its implemented model. Seed heat coupling defaults to `off`, so the final Seed does not trigger a thermal recalculation. `one_way_postprocess` instead performs the single update described in Section 6.6.
+The final Seed calculation uses the solved thermal field and any enabled photoelastic or end-face phase. The chosen backend determines whether the full spatial phase is applied. Seed heat coupling defaults to `off`, so the final Seed does not trigger a thermal recalculation. `one_way_postprocess` instead performs the single update described in Section 6.6.
 
 ### 18.2 Thermal-optical Fixed Point
 
@@ -1804,11 +1804,11 @@ The final Seed calculation uses the solved thermal field and any enabled photoel
 Complex Pump field → Absorption/populations/ASE → Heat and stress → Δn → New complex Pump field
 ```
 
-Iteration continues until the residuals for active and passive Pump absorption, populations, temperature, `delta_n`, optional end-face sag, and—when Seed heat feedback is enabled—irreversible Seed heating power and output energy satisfy their tolerances. The final Seed uses the converged thermal field. The inner steady-population or periodic solver must also converge in the current iteration and during final closure. An unconverged inner iteration may provide an initial guess for the next iteration, but cannot make the outer loop report convergence. If Seed heat feedback is enabled, passive and strong-field Seed-loss heat is included according to the implemented feedback strategy. The interface states which heat contributions are not yet part of the same fixed point.
+Iteration continues until the residuals for active and passive Pump absorption, populations, temperature, `delta_n`, optional end-face sag, and—when Seed heat feedback is enabled—irreversible Seed heating power and output energy satisfy their tolerances. The final Seed uses the converged thermal field. The inner steady-population or periodic solver must also converge in the current iteration and during final closure. An unconverged inner result may initialize the next iteration, but the outer loop cannot report convergence on that basis. If Seed heat feedback is enabled, passive and strong-field Seed-loss heat is included according to the implemented feedback strategy. The interface identifies any heat contributions excluded from that fixed point.
 
-Final closure uses a verify-then-accept-or-continue policy: complete the inner steady-state or periodic convergence under the candidate thermal field, then calculate another thermal response to check the residuals above. If verification passes, the final reported Seed replay uses the pre-pulse populations accepted by the inner convergence and exactly the same temperature, refractive index, photoelastic tensor, and end-face phase. The newly calculated verification thermal field does not replace those inputs. Saved heat sources, temperature, and stress remain from the same accepted thermal solution. `thermal.closure_verification` separately records diagnostics for the next thermal solution; it must not be interpreted as an applied output field.
+For the final closure check, the solver first converges the inner steady-state or periodic calculation under the candidate thermal field, then calculates another thermal response and checks the residuals above. If verification passes, the final reported Seed replay uses the pre-pulse populations accepted by the inner convergence and exactly the same temperature, refractive index, photoelastic tensor, and end-face phase. The thermal field calculated for verification does not replace those inputs. Saved heat sources, temperature, and stress remain from the same accepted thermal solution. `thermal.closure_verification` separately records diagnostics for the next thermal solution; it must not be interpreted as an applied output field.
 
-If verification fails, the existing relaxed or accelerated iteration continues within the remaining iteration budget. The limit remains `maximum_iterations` budgeted iterations plus at most one final verification. Exhausting that budget without passing is explicitly reported as nonconvergence. `multiphysics.closure_checks` records all verification checks, and `coupled_map_evaluations` records the actual total number of map evaluations. Tolerances and residual definitions are unchanged. Population residuals normalized by total dopant density, and changes between adjacent iterations, are not absolute error bounds on final outputs.
+If verification fails, relaxed or accelerated iteration resumes within the remaining budget. The limit remains `maximum_iterations` budgeted iterations plus at most one final verification. Exhausting that budget without passing is explicitly reported as nonconvergence. `multiphysics.closure_checks` records all verification checks, and `coupled_map_evaluations` records the actual total number of map evaluations. The same tolerances and residual definitions apply. Population residuals normalized by total dopant density and changes between adjacent iterations do not give absolute error bounds on final outputs.
 
 The `joint_frozen` option uses a different final verification policy; see the joint-iteration supplement at the end of this manual.
 
@@ -1833,7 +1833,7 @@ $$
 \eta_{QD}=1-\frac{\lambda_p}{\lambda_f}.
 $$
 
-It determines only the basic heat fraction per unit of active absorption, not the inversion efficiency itself. Pump quantum efficiency, branching, lifetimes, and upconversion affect populations separately through the rate equations and must not be multiplied into the same heat fraction again.
+This gives the basic heat fraction per unit of active absorption. Inversion efficiency is determined separately. Pump quantum efficiency, branching, lifetimes, and upconversion affect populations separately through the rate equations and must not be multiplied into the same heat fraction again.
 
 ### 18.5 Rules for Avoiding Double Counting
 
@@ -1852,9 +1852,9 @@ It determines only the basic heat fraction per unit of active absorption, not th
 
 ### 19.1 Main Computational Costs
 
-A typical ordering from lower to higher cost is: ABCD/q-parameter preview, local FN, ordinary rate equations, a 3D thermal solve, dual-grid mapping, FFT at each z step, broadband FFT for each wavelength, coherent time×space iteration, a thermal-optical fixed point, and a multipoint sweep.
+Typical computational costs increase in roughly this order: ABCD/q-parameter preview, local FN, ordinary rate equations, a 3D thermal solve, dual-grid mapping, FFT at each z step, broadband FFT for each wavelength, coherent time×space iteration, a thermal-optical fixed point, and a multipoint sweep.
 
-Roughly, spatial FFT cost grows as `Nz × Nλ × Nt × Nx × Ny × log(NxNy)`, while population-array size grows as `Nlevel × Nz × Ny × Nx`. Not every mode includes all these dimensions, but combining them makes memory requirements grow rapidly.
+Roughly, spatial FFT cost grows as `Nz × Nλ × Nt × Nx × Ny × log(NxNy)`, while population-array size grows as `Nlevel × Nz × Ny × Nx`. A mode may omit some of these dimensions, but memory requirements grow rapidly when they are combined.
 
 ### 19.2 Recommended Order of Optimization
 
@@ -1866,7 +1866,7 @@ Roughly, spatial FFT cost grows as `Nz × Nλ × Nt × Nx × Ny × log(NxNy)`, w
 6. Start fixed-point iteration with looser tolerances to establish behavior, then tighten them.
 7. Start parameter sweeps with a few points and disable expensive output recording that does not affect the target metrics.
 
-Do not simultaneously maximize outer sweep multiprocessing and FFT/BLAS internal threading. Usually, each sweep worker should use one FFT/BLAS worker; enable internal FFT threading primarily for a single large 3D case. Enable `save_vtk` mainly for debugging or a few final reference points: the current VTI/VTR writer uses ASCII, which is slow and constructs large text strings. Save complete interface result archives per point and load them on demand where possible. Keeping a large ZIP, the source arrays, and interface download copies in memory at once creates a substantial peak.
+Avoid using the maximum number of sweep processes and FFT/BLAS threads at the same time. Usually, each sweep worker should use one FFT/BLAS worker; enable internal FFT threading primarily for a single large 3D case. Reserve `save_vtk` mainly for debugging or a few final reference points. The current VTI/VTR writer uses ASCII, so it is slow and builds large text strings. Save complete interface result archives per point and load them on demand where possible. Keeping a large ZIP, the source arrays, and interface download copies in memory at once creates a substantial peak.
 
 ### 19.3 `performance` Settings
 
@@ -1891,7 +1891,7 @@ Installing `.[performance]` also enables SciPy sparse dual-grid mapping and ther
 - The fused single-transition coherent transient-gain kernel parallelizes independent x/y pixels. Within a pixel, it preserves the order of soft temporal windows, symmetric forward/reverse half-sweeps, event limiting, and population conservation. Multitransition and ensemble cases always use the general reference path.
 - The axisymmetric coherent radial kernel parallelizes independent Crank–Nicolson tridiagonal systems for different frequencies. The radial recurrence within each system remains ordered, uses complex128 coefficients, and preserves the original per-system energy normalization. Selection is controlled by `seed.coherent.axisymmetric.radial_diffraction_kernel=auto|numba|numpy`; `auto` considers the number of frequency systems and Numba availability.
 
-Without optional performance dependencies, the core numerical paths can use their corresponding reference implementations. Failure fallback for optional Signal physics backends remains subject to the state-consistency checks described earlier. A fallback selected at initialization may remain in use throughout the run, and an isolated pulse may return a runtime fallback after rollback and recomputation. A backend change midway through a state map or fixed point cannot be counted as convergence. Spectral material tensors, material-dispersion factors, thermal phase, angular-spectrum transfer functions, and radial coefficients have scoped caches with hard byte budgets. Only data that may be reused are retained across z; over-budget data are not cached. Accepting a new transient or steady thermal field or concentration environment clears propagation-local caches. Spectral material caches are additionally invalidated through a monotonic `environment_revision`. Consequently, caching does not carry old-temperature cross sections into later pulses or outer thermal-optical iterations.
+Without optional performance dependencies, the core numerical paths can use their corresponding reference implementations. Fallbacks for optional Signal physics backends must still pass the state-consistency checks described earlier. A fallback selected at initialization may remain in use throughout the run, and an isolated pulse may return a runtime fallback after rollback and recomputation. A backend change midway through a state map or fixed point cannot be counted as convergence. Spectral material tensors, material-dispersion factors, thermal phase, angular-spectrum transfer functions, and radial coefficients have scoped caches with hard byte budgets. Only data that may be reused are retained across z; over-budget data are not cached. Accepting a new transient or steady thermal field or concentration environment clears propagation-local caches. Spectral material caches are additionally invalidated through a monotonic `environment_revision`. Consequently, caching does not carry old-temperature cross sections into later pulses or outer thermal-optical iterations.
 
 `seed.coherent.local_operator.multirate_gain.enabled=true` provides another form of acceleration, but it is not an exact optimization that changes only execution strategy. Diffraction, material dispersion, Kerr, and the currently accepted thermal phase are retained at every fine substep. When permitted by the gain-exponent threshold, soft-window gain/population updates from several neighboring substeps are grouped into one representative substep. Intrapulse relaxation and dynamic free-carrier paths automatically return to gain evaluation at every substep. Pure multiphoton absorption no longer forces additional gain calls; its splitting error with grouped gain must be assessed against step refinement. Any new local operator with memory that interleaves with gain must also register a blocker before compatibility can be claimed. The run report records the actual grouping count, maximum group size, and blocking reasons, and issues a warning requiring a quantitative comparison.
 
@@ -1921,7 +1921,7 @@ For results used in formal analysis, compare at least two grid or temporal resol
 
 After profiling representative cases, prioritize caches for material spectral interpolation, compiled optical paths, angular-spectrum transfer functions, and fixed-grid sparse operators. Cache keys must include wavelength, temperature/environment revision, grid, and backend. Use Numba only for confirmed per-cell rate, small-matrix, and coherent-gain inner loops; do not compile large-array FFT work already handled efficiently by NumPy/SciPy.
 
-`solver.run`, `config.validate_config`, and the interface's form/result functions remain long, making it easy for a new field to reach only some backends. Longer-term organization should separate result DTOs/schemas from solver/output, and material-provenance requirements from configuration, then split typed validators and orchestration by Pump, levels, optics, thermal, signal, and archive. This mainly reduces the risk of missed cross-module connections and establishes stable boundaries for performance work.
+`solver.run`, `config.validate_config`, and the interface's form/result functions remain long, making it easy for a new field to reach only some backends. Longer-term organization should separate result DTOs/schemas from solver/output, and material-provenance requirements from configuration, then split typed validators and orchestration by Pump, levels, optics, thermal, signal, and archive. These changes would reduce missed connections between modules and give performance work clearer boundaries.
 
 ---
 
@@ -2030,27 +2030,27 @@ After profiling representative cases, prioritize caches for material spectral in
 
 ## 22. Output Files and Field Definitions
 
-The main files produced by a command-line run or an interface result download are described below.
+A command-line run or an interface download produces the following main result files.
 
 ### 22.0 Complete Interface Result Archives: `*.ampres.zip`
 
-"Download Complete Result Archive" is the recommended archive entry point. It produces a ZIP that can be reloaded in the separate Results Analysis page, containing:
+Use "Download Complete Result Archive" to save a ZIP that can be reloaded in the separate Results Analysis page. It contains:
 
 - A manifest for one run or an entire one-dimensional/two-dimensional parameter sweep.
 - The baseline configuration from before the sweep and a separate complete configuration for each point after its sweep parameters were applied.
 - Each completed point's `summary.json`, full NumPy field arrays, stress arrays, and optional optical planes with their coordinates.
 - Solver warnings, Python warnings, validation failures/warnings, and actual/requested Seed backends.
-- The configuration at the time of each execution failure, plus exception type, message, and full traceback. Failed points have no fabricated field arrays, but are retained in the sweep record.
+- The configuration at the time of each execution failure, plus exception type, message, and full traceback. Failed points remain in the sweep record without field arrays.
 
 After a background single run completes, its complete result archive is automatically saved to disk and its actual path is displayed. This persistent file is not deleted when the page refreshes. If it exists, the download streams a direct copy rather than recompressing it. A failure to save automatically is displayed as an error; while results remain in the session, a temporary generated download is also offered.
 
-Temporary single-point and sweep archives are **generated only when clicked and streamed over the local loopback connection**. Displaying the link merely registers a short-lived capability; writing the stream from `127.0.0.1` begins when the browser follows it. A temporary single-point archive uses bounded disk staging. A sweep loads one persisted completed point at a time instead of keeping the whole ZIP in interface memory. Temporary files are cleaned up when download completes, fails, or is canceled. Automatically saved formal archives are not deleted as temporary staging. Links expire after roughly 30 minutes by default; refreshing the results page registers a new one. This is an entry point for a browser on the local computer, not a remote file server.
+Temporary single-point and sweep archives are **generated only when clicked and streamed over the local loopback connection**. Displaying the link registers a short-lived capability. The stream from `127.0.0.1` starts only when the browser follows the link. A temporary single-point archive uses bounded disk staging. A sweep loads one persisted completed point at a time instead of keeping the whole ZIP in interface memory. Temporary files are cleaned up when download completes, fails, or is canceled. Automatically saved formal archives are not deleted as temporary staging. Links expire after roughly 30 minutes by default; refreshing the results page registers a new one. This is an entry point for a browser on the local computer, not a remote file server.
 
 If a background sweep is incomplete or stopped, the download contains only points durably completed at that moment. Its manifest records `partial=true`, `completed_points`, `requested_points`, and the job state at download time. It neither waits for nor fabricates unfinished points. After all completed points of a canceled/failed job have been successfully archived, the background cache may be cleaned according to its retention policy. Partial downloads of a running or paused job do not remove retention requirements. If interface summaries remain but the links to complete `SimulationResult` objects for successful points have been lost, the program refuses to generate a package named "complete." Instead, it offers an archive whose filename includes `summary_only` and whose metadata states `full_field_data_included=false`. That archive preserves metrics, configurations, validity, and warnings for each point, while explicitly excluding 3D fields, optical planes, and complete per-point results for replots.
 
 After loading, inspect the overall trends, 2D heatmaps, per-point tables, and errors/warnings center, then select any operating point. Completed points reconnect saved results and their original configurations to the result view. Consequently, cold and post-run 3D optical paths, spatial fields, spectra/pulses, recorded optical planes, and all diagnostics are restored from the original point, without reading subsequent edits to the current simulation form. The results page reports the restored 3D grid and number of optical planes. The 3D Optical Workbench opens its rotatable view by default. The 3D Fields and Draggable Slices view uses separate control state for each archive/point, so changing points does not reuse the previous point's field name, orientation, or slice position.
 
-Uploaded archives are treated as untrusted input. Fail-closed limits apply to ZIP member count, compressed/decompressed size and ratio, JSON/NPZ size, array count, dimensions, axis lengths, element count, and total bytes. Manifest counts must be actual JSON integers, not booleans or fractions. Required and optional arrays are checked for numerical dtype, shape, and finiteness. The interface can read the index first and load full fields only after a point is selected, avoiding extraction of every point in a large sweep at once.
+Uploaded archives are treated as untrusted input. Fail-closed limits apply to ZIP member count, compressed/decompressed size and ratio, JSON/NPZ size, array count, dimensions, axis lengths, element count, and total bytes. Manifest counts must be actual JSON integers, not booleans or fractions. Required and optional arrays are checked for numerical dtype, shape, and finiteness. The interface can first read the index, then load full fields for the selected point. It does not need to extract all points in a large sweep at once.
 
 The library's default `ArchiveResourceBudget` includes: `maximum_archive_bytes=1 GiB`, 4,096 members, 4 GiB total decompression, 2 GiB per member, 64 MiB JSON, 2 GiB NPZ, 4 GiB of arrays in total, 2 GiB per array, at most 5×10^8 elements per array, 8 dimensions, and 10^7 entries on one axis. The interface's upload entry point explicitly raises the compressed-archive limit to 3 GiB while retaining the remaining prechecks. For larger results, reduce saved fields or use a controlled local-file workflow rather than disabling the budgets.
 
@@ -2068,7 +2068,7 @@ This human-readable hierarchical summary contains:
 - The `physics_validity` model-applicability report and audit of numerical population corrections.
 - A deduplicated warning list.
 
-This should be the first file archived, but it does not contain the full three-dimensional arrays.
+Archive this file first, while also saving the full three-dimensional arrays separately.
 
 ### 22.2 `fields.npz`
 
@@ -2107,7 +2107,7 @@ Model-dependent optional fields include active/passive Pump absorption, passive 
 
 ### 22.3 `optical_planes.npz`
 
-This file is produced when `record_optical_planes` is enabled and the solver has recorded diagnostic planes. Keys encode the beam, element, or pass; arrays are generally two-dimensional intensity/fluence or quantities derived from the complex field. Read them together with the plane descriptions in `summary.json`. Do not assume that every key is present.
+This file is produced when `record_optical_planes` is enabled and the solver has recorded diagnostic planes. Keys encode the beam, element, or pass; arrays are generally two-dimensional intensity/fluence or quantities derived from the complex field. Use the plane descriptions in `summary.json` to interpret the arrays and check which keys are present.
 
 ### 22.4 `fields.vti` / `fields.vtr`
 
@@ -2132,7 +2132,7 @@ Optional arrays are `longitudinal_intensity_W_m2`, `longitudinal_intensity_area_
 
 For every case used in formal analysis, save the final JSON, `summary.json`, `fields.npz`, program Git commit/version, material-data sources, execution environment, and convergence comparisons. Screenshots alone cannot reproduce a calculation.
 
-A command-line result directory is written as one complete generation: summary, NPZ, optional optical planes, VTK, and quick-look files are first generated in a sibling staging directory. Managed files are replaced only after every write succeeds; failure restores the previous generation. Old sidecars such as `optical_planes.npz` or VTI/VTR that were not produced for the new generation are removed. User files outside the program's managed-file list remain untouched. This prevents a new summary from being mixed with old three-dimensional fields.
+A command-line result directory is written as one complete generation: summary, NPZ, optional optical planes, VTK, and quick-look files are first generated in a sibling staging directory. Managed files are replaced only after every write succeeds; failure restores the previous generation. Old sidecars such as `optical_planes.npz` or VTI/VTR that were not produced for the new generation are removed. User files outside the program's managed-file list remain untouched. The summary and three-dimensional fields therefore remain from the same result generation.
 
 ---
 
@@ -2140,7 +2140,7 @@ A command-line result directory is written as one complete generation: summary, 
 
 ## 23. Source-module Index
 
-The code follows the principle that physics modules do not depend on the interface. The tables below list the main files by stable responsibility. A configuration field should first be normalized in `config.py`, then consumed by the relevant backends. The interface must not become a second source of physical defaults.
+Physics modules are independent of the interface. The tables below group the main files by responsibility. A configuration field should first be normalized in `config.py`, then consumed by the relevant backends. The interface must not become a second source of physical defaults.
 
 Unless a path is shown explicitly, a Python filename in these tables is located in `src/amplifier_sim/`.
 
@@ -2353,9 +2353,9 @@ Unless a path is shown explicitly, a Python filename in these tables is located 
 
 ### 24.5 Documentation-to-source Cross-check (2026-09-08)
 
-This section preserves the historical documentation audit dated 8 September 2026. In that audit, the README and complete manual were read in full, then implementations, defaults, CLI, interface, and output schemas were checked against the source-audit fixes. Updates were incorporated into the relevant chapters. The table below provides entry points; it does not replace numerical convergence or experimental validation of each model. Current behavior was not inferred from historical README text, introductory PDFs, or published-paper reproduction results. Dated source-audit reports and run evidence are retained locally and are not distributed with the source.
+The documentation audit on 8 September 2026 covered the full README and manual. It checked the implementation, defaults, CLI, interface, and output schemas against the source-audit fixes, and updated the relevant chapters. The table below links each topic to its implementation; each model still requires its own convergence and experimental checks. The audit checked the source directly rather than inferring behavior from historical README text, introductory PDFs, or published-paper reproduction results. Dated audit reports and run evidence are kept locally and are not distributed with the source.
 
-That historical check covered local links and contents anchors, JSON examples, CLI argument parsing, actual `validate` runs for four referenced configurations, two material-embedding commands, and one source benchmark; all passed. **105 targeted regression checks passed.** Local documentation-check and targeted-regression records retain the evidence. Source hashes at the time matched the 100 audited Python files. That update changed documentation only and did not rerun complete three-dimensional experiments or the full collection of historical research tests. These counts describe the dated audit, not tests newly run for this English edition.
+The checks included local links and contents anchors, JSON examples, CLI argument parsing, `validate` runs for four referenced configurations, two material-embedding commands, and one source benchmark. All passed, along with **105 targeted regression checks**. The local documentation and regression records retain the results. Source hashes matched the 100 Python files audited at that time. The update changed documentation only; complete three-dimensional experiments and the full historical research test collection were not rerun. These results belong to that audit and were not rerun for this English edition.
 
 | Documentation topic | Implementation and points checked |
 |---|---|
@@ -2374,13 +2374,13 @@ That historical check covered local links and contents anchors, JSON examples, C
 | Output fields, recording, and automatic archiving (22) | [result_fields.py](../src/amplifier_sim/result_fields.py), [result_recording.py](../src/amplifier_sim/result_recording.py), [output.py](../src/amplifier_sim/output.py), [ui_solve_worker.py](../src/amplifier_sim/ui_solve_worker.py), [ui_sweep_jobs.py](../src/amplifier_sim/ui_sweep_jobs.py) |
 | CPU FFT thresholds and workers (19) | [compute_backend.py](../src/amplifier_sim/compute_backend.py): total-element threshold, SciPy workers, and NumPy fallback |
 
-Remaining source limitations are documented in their respective chapters: the live 2D raw-value display includes invalid cases; `models` is not a complete schema; the CLI and interface diagnostic archives save strict failures differently; step-size limits do not certify error; and external phase and incoherent higher-order response still require experimental definition.
+The relevant chapters describe the remaining limitations: the live 2D raw-value display includes invalid cases; `models` does not list the complete schema; the CLI and interface diagnostic archives save strict failures differently; step-size limits do not certify error; and external phase and incoherent higher-order response still need experimental definition.
 
-This manual describes the repository's implemented behavior, not an immutable software promise. When adding a configuration field or physics plugin, update this file, the defaults, validator, and related small contract checks together. Changes in published numerical values or source evidence belong in the separate research validation document. Audit evidence may be archived by date, but does not replace current instructions or configuration requirements.
+Keep this manual aligned with the implemented code. When adding a configuration field or physics plugin, update the manual, defaults, validator, and related validation checks together. Record changes in published numerical values or source evidence in the separate research validation document. Retain dated audit evidence alongside the current instructions and configuration requirements; the audit records do not replace them.
 
 ### Optional Radial Grid for Commercial App Fast
 
-The Commercial App Fast form's "Use Axisymmetric radial/angular grid" switch corresponds to `seed.commercial_app_fast.spatial_backend` (`cartesian` / `axisymmetric`). Cartesian remains the default. After switching, Cycle Average and subsequent pulses use radial/angular sampling inside the crystal, while continuing to propagate through Gaussian-q and the selected temporal closure. Radial points and angular samples respectively share `seed.coherent.axisymmetric.radial_bins` and `angular_samples`, both editable in the form. Commercial App retains all angular samples rather than using the coherent model's m-order truncation; this does not switch to coherent radial diffraction.
+In the Commercial App Fast form, "Use Axisymmetric radial/angular grid" sets `seed.commercial_app_fast.spatial_backend` (`cartesian` / `axisymmetric`), with Cartesian as the default. When enabled, Cycle Average and subsequent pulses use radial/angular sampling inside the crystal, while Gaussian-q and the selected temporal closure still govern propagation. Set the radial points and angular samples through `seed.coherent.axisymmetric.radial_bins` and `angular_samples` in the form. Commercial App retains all angular samples, without the coherent model's m-order truncation, and continues to use its own propagation model rather than coherent radial diffraction.
 
 This mode requires a uniform square optical window, a crystal covering that window, scalar polarization, and `local_field` gain. Radial points range from 8 to the optical grid's number of points along one side; angular samples range from 9 to 128. Optical paths outside the crystal, population results, and thermal fields retain Cartesian interfaces. This switch does not change thermal coupling. Initial spectral-volume data are mapped in blocks without expanding a full frequency×3D-space array. Population write-back, radial boundaries, and entrance projection have validation checks. Failure of radial q projection raises an error rather than silently switching to coherent diffraction.
 
@@ -2388,34 +2388,34 @@ This mode requires a uniform square optical window, a crystal covering that wind
 
 The form can set `seed.spectral_time.spatial_backend` to `cartesian` (default) or `axisymmetric`. The latter applies to both Cycle Average and pulse-by-pulse propagation. It shares the radial count, angular count, and finite-m modes in `seed.coherent.axisymmetric`, using radial Crank–Nicolson diffraction inside the crystal. Each frequency retains its own spatial wavefront, but phase coherence between frequencies, Kerr/SPM, and coherent compression are not calculated. External optical paths remain Cartesian. The physical thermal grid and outer thermal-optical iteration are unchanged.
 
-`temporal_bins` and `spectral_bins` default to null, retaining the original resolution; the form can set upper limits. Independent temporal/spectral inputs are rebinned conservatively without rewriting source data. Cycle Average uses one mean-power channel and the same wavelength bins; pulses deplete populations in temporal-bin order. Joint time–frequency matrix rebinning, incoherent multimode HG, nonlocal gain, and radial multipass propagation are not currently supported. The radial interface inherits the spatial applicability conditions for a common square optical grid, scalar polarization, and the selected m modes.
+`temporal_bins` and `spectral_bins` default to null, retaining the original resolution; the form can set upper limits. Independent temporal/spectral inputs are rebinned conservatively without rewriting source data. Cycle Average uses one mean-power channel and the same wavelength bins; pulses deplete populations in temporal-bin order. Joint time–frequency matrix rebinning, incoherent multimode HG, nonlocal gain, and radial multipass propagation are not currently supported. The same spatial requirements apply to the radial interface: a common square optical grid, scalar polarization, and compatibility with the selected m modes.
 
-Spectral Time applies one spatial gain step per physical z slice, with half-step diffraction before and after it. The coherent model's Kerr-adaptive substeps and independent gain-group settings do not participate in this propagation. Reducing temporal/wavelength bins is a numerical approximation; assess accuracy through a separate resolution-convergence check.
+Spectral Time applies one spatial gain step per physical z slice, with half-step diffraction before and after it. This propagation does not use the coherent model's Kerr-adaptive substeps or independent gain-group settings. Reducing temporal/wavelength bins is a numerical approximation; assess accuracy through a separate resolution-convergence check.
 
 ### Initial-energy Tail Binning
 
-Under the Seed solver-model controls, the form groups two independent "Time and frequency · Tail binning" switches corresponding to `seed.tail_binning.temporal_enabled` and `spectral_enabled`. Both default to false for compatibility with older configurations. The default `energy_coverage=0.999999` means 99.9999%, with original sampling retained in the central region. `temporal_tail_points` and `spectral_tail_points` both default to 3: this is the total across both tails, not three per tail. Each side receives at least one bin; the remaining bin goes to the side with more initial tail energy, or to the lower-coordinate side in a tie. Bin energies are summed and representative coordinates are energy-weighted. A zero-energy bin uses the mean coordinate.
+Under the Seed solver-model controls, "Time and frequency · Tail binning" contains two independent switches: `seed.tail_binning.temporal_enabled` and `spectral_enabled`. Both default to false for compatibility with older configurations. The default `energy_coverage=0.999999` means 99.9999%, with original sampling retained in the central region. `temporal_tail_points` and `spectral_tail_points` both default to 3: this is the total across both tails, not three per tail. Each side receives at least one bin; the remaining bin goes to the side with more initial tail energy, or to the lower-coordinate side in a tie. Bin energies are summed and representative coordinates are energy-weighted. A zero-energy bin uses the mean coordinate.
 
-Spectral Time supports both independent switches, with the same rule for Cartesian and radial backends. Regions are selected from the initial temporal distribution and initial frequency-energy distribution, respectively. The central region and representative bin positions remain fixed during the run. When enabled, each switch takes precedence over the older manual cap; disabling it restores that cap. Older caps remain in a collapsed panel and imported values are retained. This independent binning is not supported for joint time–frequency matrices.
+Spectral Time supports both independent switches, with the same rule for Cartesian and radial backends. Regions are selected from the initial temporal distribution and initial frequency-energy distribution, respectively. The central region and representative bin positions stay fixed throughout the run. When enabled, each switch takes precedence over the older manual cap; disabling it restores that cap. Older caps remain in a collapsed panel and imported values are retained. Joint time–frequency matrices do not support this independent binning.
 
-Merging bins also preserves their actual original edges. `temporal_bin_edges_s` and ascending `spectral_bin_edges_Hz` are saved in NPZ and `.ampres.zip`. Power and spectral density are calculated from these edges, representing bin-averaged power and finite-bin-averaged spectral density. Bin widths are no longer inferred again from energy-weighted representative points. For older archives without saved edges, original bin widths cannot be recovered uniquely from representative points alone.
+Merged bins retain the actual edges of the original bins. `temporal_bin_edges_s` and ascending `spectral_bin_edges_Hz` are saved in NPZ and `.ampres.zip`. Power and spectral density are calculated from these edges, representing bin-averaged power and finite-bin-averaged spectral density. Bin widths are no longer inferred again from energy-weighted representative points. For older archives without saved edges, original bin widths cannot be recovered uniquely from representative points alone.
 
 Whole-pulse gain in radial Coherent supports the frequency switch: the center uses one gain bin per frequency, and the tails are merged according to budget. Log-amplitude interpolation and local energy closure map back to the full complex frequency field. Radial diffraction updates only that same central interval; weak-tail complex fields are retained. The complete uniform FFT grid and Kerr time grid remain unchanged. The temporal switch is stored only for use by Spectral Time. Coherent Cycle Average retains its own spectral grid and does not reuse the coherent FFT indices. Cartesian Coherent and transient gain do not currently support this frequency switch; configuration validation reports that limitation explicitly.
 
-The threshold selects only the initial region. It is not an output-error bound and does not guarantee the same energy coverage throughout propagation. Original inputs are not rewritten. Existing result archives and frozen code in currently running jobs are unaffected by these form changes.
+The threshold selects the initial region only; it gives neither an output-error bound nor a guarantee of the same energy coverage throughout propagation. Original inputs remain unchanged. These form settings do not affect existing result archives or the frozen code used by jobs already running.
 
 ### Diagnostics Only at Final Output
 
 The result-recording form provides `simulation.result_recording.diagnostics_timing`. `all_propagations` preserves the original behavior. `final_output` runs the enabled longitudinal scalars, instantaneous-intensity sections, M², optical-plane, and exit-caustic diagnostics only during the Seed propagation that generates the final result for each case. Each diagnostic's existing switch still determines whether it is calculated. For M², `m2_z_stride=1` means a calculation at every physical z slice during final propagation.
 
-Cycle Average, outer thermal iterations, internal pulse maps, failed closure checks, and one-way Seed heat-source probes do not trigger these observers. Necessary power, population, heat-source, convergence, and numerical-validation calculations continue as usual. Final timing is marked explicitly at the solver's reporting entry point, passed through dual grids, primary/fallback backends, and radial helper layers, then restored after completion or an exception. The code does not guess the last iteration from its index, add thermal iterations, or replace the final physical state. In a sweep, each case has its own final diagnostics; they are not generated only for the final sweep point.
+Cycle Average, outer thermal iterations, internal pulse maps, failed closure checks, and one-way Seed heat-source probes do not trigger these observers. Necessary power, population, heat-source, convergence, and numerical-validation calculations continue as usual. The solver marks final timing at its reporting entry point and passes it through dual grids, primary/fallback backends, and radial helper layers. The previous timing state is restored after completion or an exception. The code does not guess the last iteration from its index, add thermal iterations, or replace the final physical state. Every case in a sweep receives final diagnostics, rather than only the final point.
 
 When a low-level propagator is called directly, `final_output` disables observers by default. The final-report entry point of a complete `AmplifierSimulator.run()` enables them. This setting is retained in JSON, result archives, and restored forms; older files default to the original behavior.
 
 ### Joint Thermal-optical Iteration
 
-In the self-consistent thermal-optical mode under "A. Multiphysics coupling," choose `joint` joint iteration or the original `nested` iteration. Joint mode requires periodic `pulse_map`. An ordinary iteration propagates a pulse, updates the thermal field, and carries populations forward from the previous iteration. The default is one pulse per heat update; `multiphysics.joint_cycles_per_iteration` controls this packet size. After output energy, populations, and outer residuals satisfy the existing consecutive-pass requirements, the thermal field is held fixed while the original inner convergence is completed, followed by outer verification. A failed final verification resumes iteration. Reaching the iteration limit is not convergence. Tolerances and consecutive-pass counts use the existing form settings.
+Under "A. Multiphysics coupling," the self-consistent thermal-optical mode offers `joint` iteration and the original `nested` iteration. Joint mode requires periodic `pulse_map`. An ordinary iteration propagates a pulse, updates the thermal field, and carries populations forward from the previous iteration. The default is one pulse per heat update; `multiphysics.joint_cycles_per_iteration` controls this packet size. After output energy, populations, and outer residuals satisfy the existing consecutive-pass requirements, the thermal field is held fixed while the original inner convergence is completed, followed by outer verification. If final verification fails, iteration resumes. Reaching the iteration limit does not establish convergence. Tolerances and consecutive-pass counts use the existing form settings.
 
-Relaxation, the outer limit, inner/outer tolerances, and final-diagnostic switches can be configured separately. If `multiphysics.iteration_scheme` is absent, the original nested mode remains in use to preserve historical configuration meaning. Thermal-field acceleration has separate Anderson controls. Numerical convergence of joint iteration does not replace physical-validity checks.
+Relaxation, the outer limit, inner/outer tolerances, and final-diagnostic switches can be configured separately. If `multiphysics.iteration_scheme` is absent, the solver uses the original nested mode so that older configurations retain their meaning. Thermal-field acceleration has separate Anderson controls. Numerical convergence of joint iteration does not replace physical-validity checks.
 
-The release also supports `multiphysics.iteration_scheme="joint_frozen"`, which is selected in the bundled `configs/example.json`. It shares the joint update process, but uses a frozen-thermal pulse-probe policy for final verification. Once the required inner and outer residuals have passed consecutively, it holds the accepted thermal state unchanged and runs the specified `multiphysics.frozen_probe_cycles` pulse-map checks. All required consecutive pulse checks must pass. This policy deliberately does not calculate a new thermal map after the final pulse verification; a failed probe resumes alternating iteration within the remaining budget. The report records `closure_policy="frozen_thermal_pulse_probe"` and `final_thermal_closure_recomputed=false`, so this must not be interpreted as the recomputed thermal closure used by `joint` or `nested`. Consult both convergence diagnostics and the separate physical-validity report when interpreting the result.
+The release also supports `multiphysics.iteration_scheme="joint_frozen"`, which is selected in the bundled `configs/example.json`. It uses the same joint updates, then verifies the final pulse map with the thermal state held fixed. Once the required inner and outer residuals have passed consecutively, it holds the accepted thermal state unchanged and runs the specified `multiphysics.frozen_probe_cycles` pulse-map checks. All required consecutive pulse checks must pass. No new thermal map is calculated after final pulse verification. If the probe fails, alternating iteration resumes within the remaining budget. The report records `closure_policy="frozen_thermal_pulse_probe"` and `final_thermal_closure_recomputed=false`, so this must not be interpreted as the recomputed thermal closure used by `joint` or `nested`. Consult both convergence diagnostics and the separate physical-validity report when interpreting the result.
